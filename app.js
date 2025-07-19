@@ -2,6 +2,7 @@ import { login, logout, getCurrentRole, initAuth, loginAsGuest } from './auth.js
 import { GuestModule } from './guest.js';
 import { renderWaiterSection } from './waiter.js';
 import { renderAdminSection, showAdminLoginPrompt } from './admin.js';
+import { NotificationService } from './utils/notificationService.js';
 
 const appContent = document.getElementById('app-content');
 const guestBtn = document.getElementById('guest-btn');
@@ -39,14 +40,8 @@ const showSection = (role) => {
     if (sections[role]) {
         sections[role].classList.remove('hidden');
         if (role === 'guest' || role === 'guest-anonymous') {
-            // Only render guestApp here if guestTableNumber is already set from URL or manual entry
-            if (guestApp.guestTableNumber) { 
-                guestApp.render(sections[role]);
-            } else {
-                // If no table number, redirect to table entry screen
-                showGuestTableEntryScreen();
-                return; // Prevent showing guest section yet
-            }
+            // Render guestApp. It will handle its own state, including table number.
+            guestApp.render(sections[role]);
         }
         if (role === 'waiter') renderWaiterSection(sections[role]);
         // Admin, Manager, Cashier roles all use the admin panel structure
@@ -98,7 +93,7 @@ const initializeApp = async () => {
     }
     
     // Auto-login as anonymous guest for QR code users if table number is present
-    if (guestApp.guestTableNumber) {
+    if (tableFromUrl && guestApp.guestTableNumber) {
         console.log('Auto-login for QR user with table:', guestApp.guestTableNumber);
         const result = await loginAsGuest();
         if (result.success) {
@@ -136,12 +131,8 @@ loginForm.addEventListener('submit', async (event) => {
 roleGuestBtn.addEventListener('click', async () => {
     const result = await loginAsGuest();
     if (result.success) {
-        // After successful anonymous login, if no table number from QR, show table entry screen
-        if (!guestApp.guestTableNumber) {
-            showGuestTableEntryScreen();
-        } else {
-            showSection('guest-anonymous'); // Proceed directly if table number is already set (from QR)
-        }
+        // After successful anonymous login, show the table entry screen.
+        showGuestTableEntryScreen();
     } else {
         NotificationService.show(`Giriş xətası: ${result.error}`, 'error');
     }
@@ -179,12 +170,8 @@ guestBtn.addEventListener('click', async () => {
     // Auto-login as anonymous guest when guest button is clicked
     const result = await loginAsGuest();
     if (result.success) {
-        // After successful anonymous login, if no table number from QR, show table entry screen
-        if (!guestApp.guestTableNumber) {
-            showGuestTableEntryScreen();
-        } else {
-            showSection('guest-anonymous'); // Proceed directly if table number is already set (from QR)
-        }
+        // Go to the table entry screen first, to be consistent.
+        showGuestTableEntryScreen();
     } else {
         NotificationService.show(`Giriş xətası: ${result.error}`, 'error');
     }

@@ -33,6 +33,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
     <script type="importmap">
         {
@@ -44,6 +45,12 @@
                 "./waiter.js": "./waiter.js",
                 "./admin.js": "./admin.js",
                 "./firebase-config.js": "./firebase-config.js",
+                "./services/dataService.js": "./services/dataService.js",
+                "./services/authService.js": "./services/authService.js",
+                "./utils/cartService.js": "./utils/cartService.js",
+                "./utils/notificationService.js": "./utils/notificationService.js",
+                "./utils/statusUtils.js": "./utils/statusUtils.js",
+                "./constants/initialData.js": "./constants/initialData.js",
                 "firebase/app": "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js",
                 "firebase/auth": "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js",
@@ -51,7 +58,7 @@
             }
         }
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode.js/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
     <header class="glass-header sticky top-0 z-50 border-b border-white/20">
@@ -83,7 +90,7 @@
                     <button id="logout-btn" class="nav-button modern-btn bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 hidden">
                         <span class="flex items-center space-x-1 sm:space-x-2">
                             <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6.5-5l2.5 5"></path>
                             </svg>
                             <span class="hidden sm:inline">Çıxış</span>
                         </span>
@@ -122,39 +129,6 @@
                     <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mt-6 mb-2 group-hover:text-purple-600 transition-colors">Admin</h2>
                     <p class="text-slate-600 text-lg">Sistem idarəetməsi və tənzimləmələr</p>
                 </button>
-            </div>
-        </div>
-    </section>
-    
-    <section id="guest-table-entry-section" class="hidden min-h-[80vh] flex items-center justify-center px-2 sm:px-4">
-        <div class="max-w-md w-full">
-            <div class="glass-card p-4 sm:p-8 md:p-10 text-center">
-                <div class="w-16 h-16 bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6.5-5l2.5 5"></path>
-                    </svg>
-                </div>
-                <h2 class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent mb-4">Masa Nömrəsini Daxil Edin</h2>
-                <p class="text-slate-600 text-sm sm:text-base mb-6">Sifariş vermək üçün masa nömrəsini daxil edin.</p>
-                
-                <form id="guest-table-form" class="space-y-4 sm:space-y-6">
-                    <div>
-                        <label for="guestTableNumberInput" class="sr-only">Masa Nömrəsi</label>
-                        <input type="number" id="guestTableNumberInput" name="tableNumber" min="1" required 
-                               class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base text-center text-xl font-bold"
-                               placeholder="Məs. 5">
-                    </div>
-                    
-                    <button type="submit" 
-                            class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
-                        <span class="flex items-center justify-center space-x-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                            </svg>
-                            <span>Menyuya Keç</span>
-                        </span>
-                    </button>
-                </form>
             </div>
         </div>
     </section>
@@ -222,6 +196,37 @@
     </section>
     <section id="admin-section" class="hidden">
         <!-- Admin content will be loaded here -->
+    </section>
+
+    <section id="guest-table-entry-section" class="hidden min-h-[80vh] flex items-center justify-center px-2 sm:px-4">
+        <div class="max-w-md w-full">
+            <div class="ultra-modern-card p-6 sm:p-8 w-full animate-scale-in">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Masa Nömrəsi</h2>
+                    <p class="text-slate-600">Sifariş verməyə başlamaq üçün masa nömrənizi daxil edin.</p>
+                </div>
+                
+                <form id="guest-table-form" class="space-y-4">
+                    <div>
+                        <label for="guestTableNumberInput" class="sr-only">Masa Nömrəsi</label>
+                        <input type="number" id="guestTableNumberInput" name="tableNumber" min="1" required 
+                               class="ultra-modern-input w-full px-4 py-3 rounded-xl text-center text-2xl font-bold"
+                               placeholder="Məs. 12">
+                    </div>
+                    
+                    <div class="pt-4">
+                        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
+                            Menyunu Göstər
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </section>
 </main>
     

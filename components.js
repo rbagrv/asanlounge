@@ -40,6 +40,12 @@ export const createProductCard = (product, actions = true) => {
         alt: product.name,
         className: 'w-full h-40 sm:h-56 object-cover transition-all duration-500 group-hover:scale-115'
     });
+    
+    // Add error handling for images
+    img.onerror = function() {
+        this.src = 'https://placehold.co/400x300/e0f2fe/0284c7?text=No+Image';
+    };
+    
     imgContainer.appendChild(img);
     
     // Enhanced overlay gradient
@@ -54,17 +60,6 @@ export const createProductCard = (product, actions = true) => {
         }, [`-${product.discountPercentage}%`]);
         imgContainer.appendChild(discountBadge);
     }
-    
-    // Enhanced favorite button
-    const favoriteBtn = createElement('button', {
-        className: 'absolute top-2 left-2 sm:top-3 sm:left-3 w-8 h-8 sm:w-10 sm:h-10 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl hover:bg-white hover:scale-125 transition-all duration-400 group-hover:rotate-12'
-    });
-    favoriteBtn.innerHTML = `
-        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-red-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-        </svg>
-    `;
-    imgContainer.appendChild(favoriteBtn);
     
     card.appendChild(imgContainer);
     
@@ -106,9 +101,8 @@ export const createProductCard = (product, actions = true) => {
 
     // Enhanced stock info
     const stockInfo = createElement('div', { className: 'text-right' });
-    // Adjusted stock status logic slightly to be more robust for undefined stock
-    const stockQuantity = product.stock !== undefined ? product.stock : 0;
-    const stockStatus = stockQuantity > 0 ? (stockQuantity < 10 ? 'az' : 'var') : 'bitib';
+    const stockQuantity = product.stock !== undefined && product.stock !== null ? product.stock : 0;
+    const stockStatus = stockQuantity > 10 ? 'var' : stockQuantity > 0 ? 'az' : 'bitib';
     const stockColor = stockStatus === 'var' ? 'text-green-600' : stockStatus === 'az' ? 'text-amber-600' : 'text-red-600';
     const stockText = stockStatus === 'var' ? `Stokda: ${stockQuantity}` : stockStatus === 'az' ? `Az qalıb: ${stockQuantity}` : 'Stokda yoxdur';
     
@@ -118,23 +112,28 @@ export const createProductCard = (product, actions = true) => {
     info.appendChild(priceSection);
     card.appendChild(info);
 
-    if (actions) {
+    if (actions && stockQuantity > 0) {
         const actionsDiv = createElement('div', { className: 'mt-4 sm:mt-6 space-y-3 sm:space-y-4' });
         
         // Enhanced quantity selector
         const quantityDiv = createElement('div', { className: 'flex items-center justify-center space-x-3 sm:space-x-4' });
         const minusBtn = createElement('button', { 
-            className: 'w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 flex items-center justify-center transition-all duration-300 hover:scale-125 shadow-lg hover:shadow-xl' 
-        }, ['-']);
+            className: 'quantity-minus-btn w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 flex items-center justify-center transition-all duration-300 hover:scale-125 shadow-lg hover:shadow-xl' 
+        });
+        minusBtn.innerHTML = '<span class="text-lg font-bold">−</span>';
+        
         const quantityInput = createElement('input', {
             type: 'number',
             value: '1',
             min: '1',
+            max: stockQuantity.toString(),
             className: 'w-12 sm:w-16 text-center bg-gradient-to-r from-white to-slate-50 border-2 border-slate-200 rounded-xl py-2 focus:outline-none focus:border-primary-500 focus:bg-white focus:shadow-lg transition-all duration-300 text-sm sm:text-base font-semibold'
         });
+        
         const plusBtn = createElement('button', { 
-            className: 'w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 flex items-center justify-center transition-all duration-300 hover:scale-125 shadow-lg hover:shadow-xl' 
-        }, ['+']);
+            className: 'quantity-plus-btn w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 flex items-center justify-center transition-all duration-300 hover:scale-125 shadow-lg hover:shadow-xl' 
+        });
+        plusBtn.innerHTML = '<span class="text-lg font-bold">+</span>';
         
         quantityDiv.appendChild(minusBtn);
         quantityDiv.appendChild(quantityInput);
@@ -143,18 +142,27 @@ export const createProductCard = (product, actions = true) => {
         
         // Enhanced add to cart button
         const addButton = createElement('button', { 
-            className: 'w-full bg-gradient-to-r from-primary-500 via-primary-600 to-accent-600 hover:from-primary-600 hover:via-accent-600 hover:to-accent-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-400 transform hover:scale-105 hover:-rotate-1' 
+            className: 'add-to-cart-btn w-full bg-gradient-to-r from-primary-500 via-primary-600 to-accent-600 hover:from-primary-600 hover:via-accent-600 hover:to-accent-700 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-400 transform hover:scale-105 hover:-rotate-1' 
         });
         addButton.innerHTML = `
             <span class="flex items-center justify-center space-x-2">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l2.5 5M9.99 17.93l3.76 1.83"></path>
                 </svg>
                 <span>Səbətə əlavə et</span>
             </span>
         `;
         actionsDiv.appendChild(addButton);
         card.appendChild(actionsDiv);
+    } else if (actions && stockQuantity <= 0) {
+        const outOfStockDiv = createElement('div', { className: 'mt-4 sm:mt-6' });
+        const outOfStockBtn = createElement('button', { 
+            className: 'w-full bg-slate-300 text-slate-500 px-4 py-2 sm:px-6 sm:py-3 rounded-xl font-semibold cursor-not-allowed',
+            disabled: true
+        });
+        outOfStockBtn.innerHTML = 'Stokda yoxdur';
+        outOfStockDiv.appendChild(outOfStockBtn);
+        card.appendChild(outOfStockDiv);
     }
 
     return card;
@@ -239,7 +247,7 @@ export const createAdminProductForm = (product = null, categories = []) => {
                     class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <span class="flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                     </svg>
                     <span>${product ? 'Yenilə' : 'Əlavə et'}</span>
                 </span>
@@ -322,13 +330,13 @@ export const createAnalyticsCard = (title, value, subtitle = '', color = 'blue')
     
     const iconMap = {
         'blue': `<svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                  </svg>`,
         'green': `<svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m4-4V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2a2 2 0 002-2V9a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2a2 2 0 002-2V9a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2z"></path>
                  </svg>`,
         'purple': `<svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
                    </svg>`,
         'orange': `<svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -407,7 +415,7 @@ export const createKitchenOrderCard = (order) => {
                 <button class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-3 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 kitchen-status-btn text-sm" data-status="in-prep">
                     <span class="flex items-center justify-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                         </svg>
                         <span>Hazırlamaya başla</span>
                     </span>
