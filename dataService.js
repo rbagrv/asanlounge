@@ -254,26 +254,17 @@ export class DataService {
         return false;
       });
       
-      const totalRevenue = orders.reduce((sum, order) => {
-        if (order.status === 'paid') {
-          return sum + order.items.reduce((itemSum, item) => itemSum + (item.priceAtOrder * item.quantity), 0);
-        }
-        return sum;
-      }, 0);
-      
-      const todayRevenue = todayOrders.reduce((sum, order) => {
-        if (order.status === 'paid') {
-          return sum + order.items.reduce((itemSum, item) => itemSum + (item.priceAtOrder * item.quantity), 0);
-        }
-        return sum;
-      }, 0);
+      const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+      const todayRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
       
       return {
         totalOrders: orders.length,
         todayOrders: todayOrders.length,
         totalRevenue: totalRevenue,
         todayRevenue: todayRevenue,
-        activeOrders: orders.filter(order => order.status !== 'paid' && order.status !== 'cancelled').length,
+        activeOrders: orders.filter(order => {
+            return ['pending', 'in-prep', 'ready'].includes(order.status);
+        }).length,
         popularItems: this.getPopularItems(orders)
       };
     } catch (error) {
@@ -467,12 +458,12 @@ export class DataService {
 
   static async getRecipes() {
     try {
-        const recipesCol = collection(db, 'recipes');
-        const recipeSnapshot = await getDocs(recipesCol);
-        return recipeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const recipesCol = collection(db, 'recipes');
+      const recipeSnapshot = await getDocs(recipesCol);
+      return recipeSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-        console.error("Error getting recipes: ", error);
-        return [];
+      console.error("Error getting recipes: ", error);
+      return [];
     }
   }
   

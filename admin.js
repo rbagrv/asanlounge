@@ -6,6 +6,7 @@ import { CartService } from './utils/cartService.js';
 import { StatusUtils } from './utils/statusUtils.js'; 
 import { db } from './firebase-config.js';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { renderWaiterSection } from './waiter.js';
 
 let adminCartService = new CartService();
 let currentModal = null; 
@@ -13,6 +14,20 @@ let audioContext;
 let newOrderSoundBuffer;
 let knownOrderIds = new Set();
 let orderListener = null;
+let orderTimersInterval = null; // To hold the interval for updating timers
+
+const exitPOS = () => {
+    const posContainer = document.getElementById('pos-modal-container');
+    const mainHeader = document.querySelector('header');
+    const appContent = document.getElementById('app-content');
+    
+    posContainer.innerHTML = '';
+    if(mainHeader) mainHeader.style.display = 'block';
+    if(appContent) appContent.style.paddingTop = ''; // Restore padding if needed
+
+    // Re-render the dashboard to get back to the normal admin view
+    renderAdminSection(document.getElementById('admin-section'));
+};
 
 // Initialize audio for notifications
 const initAudio = async () => {
@@ -162,11 +177,13 @@ const showNewOrderPopup = (order) => {
 
 const renderSidebarNav = (currentRole) => {
     const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z', roles: ['admin', 'manager', 'cashier'] },
+        { id: 'dashboard', label: 'Dashboard', icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293.707L3.293 7.293A1 1 0 013 6.586V4z', roles: ['admin', 'manager', 'cashier'] },
         { id: 'pos', label: 'POS Sistemi', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3h10a3 3 0 00-3 3m0 0V5a2 2 0 012-2h2a2 2 0 012 2v5m-4 0h4', roles: ['admin', 'manager', 'cashier'] },
-        { id: 'orders', label: 'Sifarişlər', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v5m-4 0h4', roles: ['admin', 'manager', 'cashier'] },
+        { id: 'orders', label: 'Sifarişlər', icon: 'M9 5H7a2 2 0 00-2 2h10m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', roles: ['admin', 'manager', 'cashier'] },
+        { id: 'kitchen', label: 'Mətbəx', icon: 'M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z', roles: ['admin', 'manager'] },
         { id: 'cashier', label: 'Kassa', icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', roles: ['admin', 'manager', 'cashier'] },
         { id: 'products', label: 'Məhsullar', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4', roles: ['admin', 'manager'] },
+        { id: 'recipes', label: 'Resepturalar', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253', roles: ['admin', 'manager'] },
         { id: 'categories', label: 'Kateqoriyalar', icon: 'M19 11H5m14-7H5m14 14H5', roles: ['admin', 'manager'] },
         { id: 'customers', label: 'Müştərilər', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z', roles: ['admin', 'manager', 'cashier'] },
         { id: 'suppliers', label: 'Təchizatçılar', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4', roles: ['admin', 'manager'] },
@@ -175,8 +192,7 @@ const renderSidebarNav = (currentRole) => {
         { id: 'inventory', label: 'Inventar', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4', roles: ['admin', 'manager'] },
         { id: 'purchases', label: 'Alışlar', icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6.5-5l2.5 5', roles: ['admin', 'manager'] },
         { id: 'employees', label: 'İşçilər', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z', roles: ['admin'] },
-        { id: 'reports', label: 'Hesabatlar', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', roles: ['admin', 'manager'] },
-        { id: 'settings', label: 'Tənzimləmələr', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 011.065 2.572c1.756.426-1.756 2.924 0 3.35a1.724 1.724 0 01-1.066 2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z', roles: ['admin', 'manager'] }
+        { id: 'reports', label: 'Hesabatlar', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', roles: ['admin', 'manager'] }
     ];
 
     return navItems
@@ -381,7 +397,7 @@ export const renderAdminSection = (container) => {
                 </div>
 
                 <!-- Main content area -->
-                <main class="flex-1 p-6">
+                <main class="flex-1 p-6" id="admin-main-content">
                     <div id="admin-content">
                         <!-- Content will be loaded here -->
                     </div>
@@ -412,6 +428,12 @@ const setupAdminEventListeners = (container) => {
             navItem.classList.add('bg-primary-50', 'text-primary-700');
             navItem.classList.remove('text-slate-600');
             
+            // Clear any running intervals from other sections
+            if (orderTimersInterval) {
+                clearInterval(orderTimersInterval);
+                orderTimersInterval = null;
+            }
+            
             // Load section content
             loadAdminSection(section);
         }
@@ -435,16 +457,22 @@ const loadAdminSection = (section) => {
             showDashboard();
             break;
         case 'pos':
-            showPOSSection();
+            launchPOS();
             break;
         case 'orders':
             showOrdersSection();
+            break;
+        case 'kitchen':
+            showKitchenSection();
             break;
         case 'cashier':
             showCashierSection();
             break;
         case 'products':
             showProductsSection();
+            break;
+        case 'recipes':
+            showRecipesSection();
             break;
         case 'categories':
             showCategoriesSection();
@@ -566,52 +594,99 @@ const loadActiveOrders = async () => {
     }
 };
 
-const showPOSSection = async () => {
+const showKitchenSection = () => {
     const contentArea = document.querySelector('#admin-content');
-    contentArea.innerHTML = `
-        <div class="space-y-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-slate-800 mb-2">POS Sistemi</h1>
-                    <p class="text-slate-600">Satış nöqtəsi sistemi - sürətli sifariş qəbulu</p>
+    contentArea.innerHTML = ''; // Clear previous content
+    
+    // The renderWaiterSection function from waiter.js already builds the KDS UI
+    // We can call it directly and append its output to our admin content area.
+    // It returns a cleanup function, which we should call if we navigate away.
+    // For simplicity here, we'll just render it. A more robust implementation
+    // would handle the cleanup.
+    const cleanup = renderWaiterSection(contentArea);
+    
+    // Store cleanup function if needed, for when navigating away
+    // For simplicity here, we assume navigating away re-renders the whole admin section
+    // which effectively cleans up listeners.
+};
+
+const launchPOS = async () => {
+    const posContainer = document.getElementById('pos-modal-container');
+    const mainHeader = document.querySelector('header');
+    const appContent = document.getElementById('app-content');
+
+    // Hide main UI elements
+    if(mainHeader) mainHeader.style.display = 'none';
+    if(appContent) appContent.style.paddingTop = '0'; // Remove padding from main content
+    
+    posContainer.innerHTML = `
+        <div class="pos-modal">
+            <header class="bg-white shadow-md p-3 flex justify-between items-center flex-shrink-0">
+                 <h1 class="text-xl font-bold text-slate-800">POS Sistemi</h1>
+                <button id="exit-pos-btn" class="modern-btn bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H3"></path></svg>
+                    <span>Çıxış</span>
+                </button>
+            </header>
+            <main class="flex-1 flex overflow-hidden">
+                <!-- Left: Orders -->
+                <div class="w-1/4 bg-white border-r overflow-y-auto p-4 flex flex-col">
+                    <div class="flex-shrink-0 mb-4 flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-slate-700">Sifarişlər</h2>
+                        <button id="create-new-order-btn" class="modern-btn bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                            <span>Yeni</span>
+                        </button>
+                    </div>
+                    <div class="flex-1 space-y-3 overflow-y-auto">
+                        <div>
+                            <h3 class="font-bold text-slate-600 mb-2">Online Sifarişlər</h3>
+                            <div id="pos-online-orders-list" class="space-y-2">
+                                <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+                            </div>
+                        </div>
+                        <div class="border-t pt-3 mt-3">
+                            <h3 class="font-bold text-slate-600 mb-2">Sistem Sifarişləri</h3>
+                            <div id="pos-system-orders-list" class="space-y-2">
+                                <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Products Selection -->
-                <div class="lg:col-span-2 ultra-modern-card p-6">
-                    <div class="mb-4">
+
+                <!-- Center: Products -->
+                <div class="flex-1 overflow-y-auto p-4 flex flex-col">
+                    <div class="mb-4 flex-shrink-0">
                         <div id="pos-categories-filter" class="flex flex-wrap gap-2 mb-4">
-                            <button class="pos-category-filter bg-primary-500 text-white px-4 py-2 rounded-lg" data-category="all">Hamısı</button>
+                            <!-- Categories will be loaded here -->
                         </div>
                         <input type="text" id="pos-search" placeholder="Məhsul axtar..." 
-                               class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary-500">
+                               class="w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary-500 ultra-modern-input">
                     </div>
-                    
-                    <div id="pos-products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        <div class="flex justify-center py-8 col-span-full">
-                            <div class="loading-spinner"></div>
-                        </div>
+                    <div id="pos-products-grid" class="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-y-auto">
+                        <div class="flex justify-center py-8 col-span-full"><div class="loading-spinner"></div></div>
                     </div>
                 </div>
-                
-                <!-- POS Cart -->
-                <div class="ultra-modern-card p-6">
-                    <h2 class="text-xl font-bold text-slate-800 mb-4">Cari Sifariş</h2>
-                    <div class="mb-4">
-                        <label class="block text-sm font-bold text-slate-700 mb-2">Masa Nömrəsi</label>
-                        <input type="number" id="pos-table-number" min="1" 
-                               class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary-500"
-                               placeholder="Masa nömrəsi">
+
+                <!-- Right: Cart -->
+                <div class="w-1/3 bg-white border-l overflow-y-auto p-4 flex flex-col">
+                    <div class="flex-shrink-0">
+                        <h2 class="text-xl font-bold text-slate-800 mb-4">Cari Sifariş</h2>
+                        <div class="mb-4">
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Masa Nömrəsi</label>
+                            <input type="number" id="pos-table-number" min="1" 
+                                class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary-500 ultra-modern-input"
+                                placeholder="Masa nömrəsi daxil edin">
+                        </div>
                     </div>
                     
-                    <div id="pos-cart-items" class="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                    <div id="pos-cart-items" class="flex-1 space-y-3 mb-6 overflow-y-auto">
                         <p class="text-slate-500 text-center py-8">Məhsul seçin</p>
                     </div>
                     
-                    <div class="border-t pt-4 mb-4">
+                    <div class="border-t pt-4 mb-4 flex-shrink-0">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="font-bold">Ara cəm:</span>
+                            <span class="font-semibold">Ara cəm:</span>
                             <span id="pos-subtotal">0.00 AZN</span>
                         </div>
                         <div class="flex justify-between items-center mb-2">
@@ -624,9 +699,9 @@ const showPOSSection = async () => {
                         </div>
                     </div>
                     
-                    <div class="space-y-3">
+                    <div class="space-y-3 flex-shrink-0">
                         <button id="pos-place-order" disabled
-                                class="w-full premium-gradient-btn disabled:bg-slate-300 text-white px-4 py-3 rounded-xl font-semibold">
+                                class="w-full premium-gradient-btn disabled:from-slate-300 disabled:to-slate-400 text-white px-4 py-3 rounded-xl font-semibold">
                             Sifariş Ver
                         </button>
                         <button id="pos-clear-cart" 
@@ -635,12 +710,255 @@ const showPOSSection = async () => {
                         </button>
                     </div>
                 </div>
+            </main>
+        </div>
+    `;
+
+    document.getElementById('exit-pos-btn').addEventListener('click', exitPOS);
+    await loadPOSProducts(true);
+    setupPOSEventListeners();
+    loadPOSActiveOrders();
+};
+
+const showPOSSection = async () => {
+    console.warn("showPOSSection is deprecated. Use launchPOS.");
+    launchPOS();
+};
+
+const showRecipesSection = async () => {
+    const contentArea = document.querySelector('#admin-content');
+    contentArea.innerHTML = `
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 mb-2">Resepturalar</h1>
+                    <p class="text-slate-600">Məhsul reseptlərini və tərkiblərini idarə edin</p>
+                </div>
+                <button id="add-recipe-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
+                    Resept Əlavə Et
+                </button>
+            </div>
+            
+            <div class="ultra-modern-card p-6">
+                 <div class="text-center py-8">
+                    <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"></path>
+                        </svg>
+                    </div>
+                    <p class="text-slate-500">Resepturalar bölməsi hazırlanır...</p>
+                    <p class="text-sm text-slate-400 mt-2">Burada məhsulların tərkibini inventar ilə əlaqələndirə biləcəksiniz.</p>
+                </div>
+            </div>
+        </div>
+    `;
+};
+
+const showOrdersSection = async () => {
+    const contentArea = document.querySelector('#admin-content');
+    contentArea.innerHTML = `
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800 mb-2">Sifarişlər</h1>
+                    <p class="text-slate-600">Bütün sifarişləri idarə edin</p>
+                </div>
+            </div>
+            
+            <div class="ultra-modern-card p-6">
+                 <div class="mb-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <input type="text" id="order-search" placeholder="Masa nömrəsi və ya sifariş ID-si ilə axtar..." class="w-full px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <select id="order-status-filter" class="px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="all">Bütün Statuslar</option>
+                        <option value="pending">Gözləmədə</option>
+                        <option value="in-prep">Hazırlanır</option>
+                        <option value="ready">Hazırdır</option>
+                        <option value="served">Servis Edildi</option>
+                        <option value="paid">Ödənildi</option>
+                        <option value="cancelled">Ləğv Edildi</option>
+                    </select>
+                </div>
+                <div id="orders-list-container" class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100/80 backdrop-blur-sm sticky top-0">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">Masa №</th>
+                                <th scope="col" class="px-4 py-3 min-w-[200px]">Məhsullar</th>
+                                <th scope="col" class="px-4 py-3">Ümumi Məbləğ</th>
+                                <th scope="col" class="px-4 py-3">Sifariş vaxtı</th>
+                                <th scope="col" class="px-4 py-3">Keçən müddət</th>
+                                <th scope="col" class="px-4 py-3">Status</th>
+                                <th scope="col" class="px-4 py-3">Əməliyyatlar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body">
+                            <tr>
+                                <td colspan="7">
+                                    <div class="flex justify-center py-8 col-span-full">
+                                        <div class="loading-spinner"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     `;
     
-    await loadPOSProducts();
-    setupPOSEventListeners();
+    try {
+        const orders = await DataService.getOrders();
+        renderOrdersTable(orders); // Initial render
+        setupOrdersEventListeners(orders, renderOrdersTable);
+    } catch (error) {
+        console.error('Error loading orders:', error);
+        const ordersTableBody = document.querySelector('#orders-table-body');
+        if (ordersTableBody) {
+             ordersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-red-500">Sifarişlər yüklənərkən xəta baş verdi.</td></tr>`;
+        }
+        NotificationService.show('Sifarişlər yüklənərkən xəta baş verdi.', 'error');
+    }
+};
+
+const createOrderTableRow = (order) => {
+    const tr = createElement('tr', {
+        className: 'bg-white border-b hover:bg-slate-50',
+        dataset: { 
+            orderId: order.id, 
+            timestamp: order.createdAt ? JSON.stringify(order.createdAt) : '{}'
+        }
+    });
+
+    const total = order.total || order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+
+    const itemsHtml = order.items.map(item => `<li>${item.quantity}x ${item.name}</li>`).join('');
+    
+    const orderTime = (order.createdAt && order.createdAt.seconds)
+        ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString('az-AZ')
+        : 'N/A';
+    
+    tr.innerHTML = `
+        <td class="px-4 py-4 font-bold text-slate-700">
+            ${order.tableNumber}
+        </td>
+        <td class="px-4 py-4">
+            <ul class="list-disc list-inside">${itemsHtml}</ul>
+        </td>
+        <td class="px-4 py-4 font-semibold">
+            ${total.toFixed(2)} AZN
+        </td>
+        <td class="px-4 py-4">
+            ${orderTime}
+        </td>
+        <td class="px-4 py-4 order-timer font-semibold">
+            -
+        </td>
+        <td class="px-4 py-4">
+            <span class="px-2 py-1 rounded-full text-xs font-semibold ${StatusUtils.getStatusColor(order.status)}">
+                ${StatusUtils.getStatusText(order.status)}
+            </span>
+        </td>
+        <td class="px-4 py-4">
+            <div class="flex items-center space-x-2">
+                <button class="text-blue-500 hover:text-blue-700" title="Ətraflı"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
+                <button class="text-red-500 hover:text-red-700" title="Ləğv et"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2 2m2-2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>
+            </div>
+        </td>
+    `;
+    return tr;
+};
+
+const updateOrderTimersInTable = () => {
+    const orderRows = document.querySelectorAll('#orders-table-body tr[data-timestamp]');
+    orderRows.forEach(row => {
+        const timestampStr = row.dataset.timestamp;
+        if (!timestampStr || timestampStr === '{}') return;
+
+        try {
+            const timestamp = JSON.parse(timestampStr);
+            if (!timestamp || !timestamp.seconds) return;
+
+            const orderTimestamp = new Date(timestamp.seconds * 1000 + (timestamp.nanoseconds / 1000000));
+            const timeElapsed = Math.floor((new Date() - orderTimestamp) / 1000); // in seconds
+            
+            const minutes = Math.floor(timeElapsed / 60);
+            const seconds = timeElapsed % 60;
+
+            const timerEl = row.querySelector('.order-timer');
+            if (timerEl) {
+                timerEl.textContent = `${minutes} dəq ${seconds.toString().padStart(2, '0')} san`;
+            }
+        } catch(e) {
+            console.error('Error parsing timestamp from dataset for timer', e);
+        }
+    });
+};
+
+const renderOrdersTable = (filteredOrders) => {
+    const ordersTableBody = document.querySelector('#orders-table-body');
+    if (!ordersTableBody) return;
+
+    if (filteredOrders.length === 0) {
+        ordersTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-500">Sifariş yoxdur</td></tr>`;
+    } else {
+        ordersTableBody.innerHTML = '';
+        filteredOrders.forEach(order => {
+            const tr = createOrderTableRow(order);
+            ordersTableBody.appendChild(tr);
+        });
+    }
+
+    // Clear previous interval if it exists
+    if (orderTimersInterval) {
+        clearInterval(orderTimersInterval);
+    }
+    // Update timers immediately and then every second
+    updateOrderTimersInTable();
+    orderTimersInterval = setInterval(updateOrderTimersInTable, 1000);
+};
+
+const setupOrdersEventListeners = (orders, renderCallback) => {
+    const ordersContainer = document.querySelector('#orders-list-container');
+    const searchInput = document.querySelector('#order-search');
+    const statusFilter = document.querySelector('#order-status-filter');
+
+    const filterAndRender = () => {
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const status = statusFilter.value;
+
+        const filteredOrders = orders.filter(order => {
+            const matchesSearch = searchTerm === '' || 
+                                  order.id.toLowerCase().includes(searchTerm) ||
+                                  `masa ${order.tableNumber}`.includes(searchTerm) ||
+                                  order.tableNumber.toString().includes(searchTerm);
+            const matchesStatus = status === 'all' || order.status === status;
+            return matchesSearch && matchesStatus;
+        });
+        
+        renderCallback(filteredOrders);
+    };
+
+    searchInput.addEventListener('input', filterAndRender);
+    statusFilter.addEventListener('change', filterAndRender);
+    
+    if (ordersContainer) {
+        ordersContainer.addEventListener('click', async (e) => {
+            const updateButton = e.target.closest('.update-status-btn');
+            if (updateButton) {
+                const orderRow = updateButton.closest('[data-order-id]');
+                const orderId = orderRow.dataset.orderId;
+                const newStatus = updateButton.dataset.status;
+
+                try {
+                    await DataService.updateOrder(orderId, newStatus);
+                    NotificationService.show('Sifariş statusu yeniləndi', 'success');
+                    showOrdersSection(); // Reload the section to show updated data
+                } catch (error) {
+                    NotificationService.show('Status yenilənərkən xəta baş verdi', 'error');
+                }
+            }
+        });
+    }
 };
 
 const showCashierSection = async () => {
@@ -1425,7 +1743,10 @@ const showSettingsSection = () => {
 };
 
 // Helper functions for new sections
-const loadPOSProducts = async () => {
+const loadPOSProducts = async (isFullScreen = false) => {
+    const productsGridSelector = isFullScreen ? '#pos-products-grid' : '#legacy-pos-products-grid';
+    const categoriesFilterSelector = isFullScreen ? '#pos-categories-filter' : '#legacy-pos-categories-filter';
+    
     try {
         const [products, categories] = await Promise.all([
             DataService.getProducts(),
@@ -1433,7 +1754,7 @@ const loadPOSProducts = async () => {
         ]);
         
         // Update categories filter
-        const categoriesFilter = document.querySelector('#pos-categories-filter');
+        const categoriesFilter = document.querySelector(categoriesFilterSelector);
         if (categoriesFilter) {
             categoriesFilter.innerHTML = `
                 <button class="pos-category-filter bg-primary-500 text-white px-4 py-2 rounded-lg" data-category="all">Hamısı</button>
@@ -1445,7 +1766,7 @@ const loadPOSProducts = async () => {
             `;
         }
         
-        renderPOSProducts(products);
+        renderPOSProducts(products, isFullScreen);
         
         // Setup category filter listeners
         categoriesFilter?.addEventListener('click', (e) => {
@@ -1462,7 +1783,7 @@ const loadPOSProducts = async () => {
                 
                 // Filter products
                 const filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
-                renderPOSProducts(filteredProducts);
+                renderPOSProducts(filteredProducts, isFullScreen);
             }
         });
         
@@ -1472,8 +1793,9 @@ const loadPOSProducts = async () => {
     }
 };
 
-const renderPOSProducts = (products) => {
-    const productsGrid = document.querySelector('#pos-products-grid');
+const renderPOSProducts = (products, isFullScreen = false) => {
+    const productsGridSelector = isFullScreen ? '#pos-products-grid' : '#legacy-pos-products-grid';
+    const productsGrid = document.querySelector(productsGridSelector);
     if (!productsGrid) return;
     
     if (products.length === 0) {
@@ -1482,21 +1804,26 @@ const renderPOSProducts = (products) => {
     }
     
     productsGrid.innerHTML = products.map(product => `
-        <div class="pos-product-card ultra-modern-card p-3 cursor-pointer hover:scale-105 transition-transform duration-200" data-product-id="${product.id}">
-            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-20 object-cover rounded-lg mb-2" onerror="this.src='https://via.placeholder.com/200x150?text=No+Image'">
-            <h4 class="font-semibold text-sm text-slate-800 truncate">${product.name}</h4>
-            <p class="text-primary-600 font-bold text-sm">${product.price.toFixed(2)} AZN</p>
-            ${product.stock !== undefined ? `<p class="text-xs text-slate-500">Stok: ${product.stock}</p>` : ''}
+        <div class="pos-product-card ultra-modern-card p-3 cursor-pointer hover:scale-105 transition-transform duration-200 flex flex-col" data-product-id="${product.id}">
+            <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-24 object-cover rounded-lg mb-2" onerror="this.src='https://placehold.co/200x150/e0f2fe/0284c7?text=No+Image'">
+            <div class="flex-1 flex flex-col justify-between">
+                <h4 class="font-semibold text-sm text-slate-800 truncate">${product.name}</h4>
+                <div>
+                    <p class="text-primary-600 font-bold text-sm">${product.price.toFixed(2)} AZN</p>
+                    ${product.stock !== undefined ? `<p class="text-xs text-slate-500">Stok: ${product.stock}</p>` : ''}
+                </div>
+            </div>
         </div>
     `).join('');
 };
 
 const setupPOSEventListeners = () => {
-    const productsGrid = document.querySelector('#pos-products-grid');
-    const cartItems = document.querySelector('#pos-cart-items');
-    const tableNumberInput = document.querySelector('#pos-table-number');
-    const placeOrderBtn = document.querySelector('#pos-place-order');
-    const clearCartBtn = document.querySelector('#pos-clear-cart');
+    const container = document.getElementById('pos-modal-container') || document.getElementById('admin-content');
+    const productsGrid = container.querySelector('#pos-products-grid');
+    const cartItems = container.querySelector('#pos-cart-items');
+    const tableNumberInput = container.querySelector('#pos-table-number');
+    const placeOrderBtn = container.querySelector('#pos-place-order');
+    const clearCartBtn = container.querySelector('#pos-clear-cart');
     
     let posCart = [];
     
@@ -1552,7 +1879,7 @@ const setupPOSEventListeners = () => {
                         posCart.push({
                             id: product.id,
                             name: product.name,
-                            price: product.price,
+                            priceAtOrder: product.price,
                             quantity: 1
                         });
                     }
@@ -1592,7 +1919,7 @@ const setupPOSEventListeners = () => {
                     id: item.id,
                     name: item.name,
                     quantity: item.quantity,
-                    priceAtOrder: item.price
+                    priceAtOrder: item.priceAtOrder
                 })),
                 status: 'pending',
                 orderSource: 'pos'
@@ -1628,6 +1955,139 @@ const setupPOSEventListeners = () => {
     
     // Initial update
     updatePOSCart();
+
+    // New listener for create order button
+    container.querySelector('#create-new-order-btn')?.addEventListener('click', () => {
+        // Clear current selections
+        posCart = [];
+        tableNumberInput.value = '';
+        updatePOSCart();
+
+        createNewOrderModal();
+    });
+};
+
+const createNewOrderModal = async () => {
+    const loadingEl = NotificationService.showLoading('Mövcud masalar yoxlanılır...');
+    try {
+        const [tables, orders] = await Promise.all([
+            DataService.getTables(),
+            DataService.getOrders()
+        ]);
+        
+        const activeTableNumbers = orders
+            .filter(o => ['pending', 'in-prep', 'ready', 'served'].includes(o.status))
+            .map(o => o.tableNumber);
+
+        const availableTables = tables.filter(t => !activeTableNumbers.includes(t.number));
+        
+        NotificationService.hideLoading(loadingEl);
+        
+        const modal = createElement('div', {
+            className: 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4'
+        });
+
+        let tableListHtml = '';
+        if (availableTables.length > 0) {
+            tableListHtml = availableTables
+                .sort((a, b) => a.number - b.number)
+                .map(table => `
+                    <button class="w-full text-left p-4 bg-slate-100 hover:bg-primary-100 rounded-lg transition-colors select-table-btn" data-table-number="${table.number}">
+                        Masa ${table.number} (Tutum: ${table.capacity})
+                    </button>
+                `).join('');
+        } else {
+            tableListHtml = '<p class="text-slate-500 text-center py-8">Bütün masalar məşğuldur.</p>';
+        }
+
+        modal.innerHTML = `
+            <div class="ultra-modern-card p-0 w-full max-w-lg animate-scale-in">
+                <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                    <h2 class="text-2xl font-bold text-slate-800">Masa seçin</h2>
+                    <button id="close-table-select-modal" class="w-8 h-8 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center text-slate-600">&times;</button>
+                </div>
+                <div class="p-6 max-h-[60vh] overflow-y-auto space-y-3" id="available-tables-list">
+                    ${tableListHtml}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const closeModal = () => {
+            if (modal.parentNode) {
+                document.body.removeChild(modal);
+            }
+        };
+
+        modal.querySelector('#close-table-select-modal').addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        modal.querySelector('#available-tables-list').addEventListener('click', (e) => {
+            const button = e.target.closest('.select-table-btn');
+            if (button) {
+                const tableNumber = button.dataset.tableNumber;
+                document.getElementById('pos-table-number').value = tableNumber;
+                
+                // Trigger input event to update button states
+                document.getElementById('pos-table-number').dispatchEvent(new Event('input'));
+                
+                NotificationService.show(`Masa ${tableNumber} seçildi.`, 'info');
+                closeModal();
+            }
+        });
+
+    } catch (error) {
+        NotificationService.hideLoading(loadingEl);
+        NotificationService.show('Masalar yüklənərkən xəta baş verdi', 'error');
+        console.error('Error creating new order modal:', error);
+    }
+};
+
+const loadPOSActiveOrders = async () => {
+    const onlineOrdersList = document.querySelector('#pos-online-orders-list');
+    const systemOrdersList = document.querySelector('#pos-system-orders-list');
+    if (!onlineOrdersList || !systemOrdersList) return;
+
+    try {
+        const orders = await DataService.getOrders();
+        const activeOrders = orders.filter(order => ['pending', 'in-prep', 'ready', 'served'].includes(order.status));
+        
+        const onlineOrders = activeOrders.filter(o => o.orderSource !== 'pos');
+        const systemOrders = activeOrders.filter(o => o.orderSource === 'pos');
+
+        const renderOrderList = (listEl, orderList, emptyMessage) => {
+            if (orderList.length === 0) {
+                listEl.innerHTML = `<p class="text-slate-400 text-center text-sm py-4">${emptyMessage}</p>`;
+                return;
+            }
+            listEl.innerHTML = orderList.map(order => {
+                const total = order.total || order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+                return `
+                    <div class="border rounded-lg p-3 ${StatusUtils.getKitchenStatusBorder(order.status)} cursor-pointer hover:bg-slate-50 transition-colors pos-order-item" data-order-id="${order.id}">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-bold text-lg">Masa ${order.tableNumber}</span>
+                            <span class="text-sm font-semibold px-2 py-1 rounded-full ${StatusUtils.getStatusColor(order.status)}">${StatusUtils.getStatusText(order.status)}</span>
+                        </div>
+                        <p class="text-slate-600 font-bold">${total.toFixed(2)} AZN</p>
+                        <p class="text-xs text-slate-400">ID: ${order.id.substring(0, 6)}</p>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        renderOrderList(onlineOrdersList, onlineOrders, 'Online sifariş yoxdur.');
+        renderOrderList(systemOrdersList, systemOrders, 'Sistem sifarişi yoxdur.');
+
+    } catch (error) {
+        console.error('Error loading active POS orders:', error);
+        onlineOrdersList.innerHTML = '<p class="text-red-500 text-center py-4">Sifarişləri yükləmək mümkün olmadı.</p>';
+        systemOrdersList.innerHTML = '<p class="text-red-500 text-center py-4">Sifarişləri yükləmək mümkün olmadı.</p>';
+    }
 };
 
 const loadCashierData = async () => {
@@ -1734,7 +2194,7 @@ const showDeleteConfirmation = (message, onConfirm) => {
         <div class="ultra-modern-card p-8 w-full max-w-md text-center">
             <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 0v2m0-2h2m-2 0h-2m9-6a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Əminsən?</h3>

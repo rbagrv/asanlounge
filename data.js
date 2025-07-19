@@ -29,6 +29,7 @@ export const getInventoryItems = DataService.getInventoryItems.bind(DataService)
 export const addInventoryItem = DataService.addInventoryItem.bind(DataService);
 export const updateInventoryItem = DataService.updateInventoryItem.bind(DataService);
 export const deleteInventoryItem = DataService.deleteInventoryItem.bind(DataService);
+export const getRecipes = DataService.getRecipes.bind(DataService);
 
 // For employees, we rely on auth service for registration, and user data would typically be managed in a 'users' collection or through Firebase Admin SDK.
 // For now, we'll keep it simple for demo purposes.
