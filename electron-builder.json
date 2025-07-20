@@ -1,6 +1,6 @@
 {
-  "appId": "com.restaurant.system",
-  "productName": "Restoran Sistemi",
+  "appId": "com.eatanddrink.app",
+  "productName": "Eat & drink app",
   "directories": {
     "output": "dist"
   },

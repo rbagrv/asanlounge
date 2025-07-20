@@ -2,6 +2,8 @@ import { createElement, createProductCard } from './components.js';
 import { DataService } from './services/dataService.js';
 import { guestCartService } from './utils/cartService.js';
 import { NotificationService } from './utils/notificationService.js';
+import { getCurrentUser } from './auth.js';
+import { StatusUtils } from './utils/statusUtils.js';
 
 export class GuestModule {
   constructor() {
@@ -14,6 +16,8 @@ export class GuestModule {
     this.selectedCategory = null;
     this.isCartExpanded = false; // To track cart state
     this.isInitialized = false; // Add initialization flag
+    this.userId = null;
+    this.orderListenerUnsubscribe = null;
   }
 
   async initialize() {
@@ -29,6 +33,10 @@ export class GuestModule {
         ]);
         this.allCategories = categories;
         this.allProducts = products;
+        this.userId = getCurrentUser()?.uid;
+        if(this.userId) {
+            this.startOrderTracking();
+        }
 
         console.log('Categories loaded:', this.allCategories.length);
         console.log('Products loaded:', this.allProducts.length);
@@ -309,6 +317,12 @@ export class GuestModule {
       const productCard = event.target.closest('.product-card');
       if (productCard) {
           this.handleProductInteraction(event);
+      }
+
+      // Guest notifications
+      const guestNotificationsBtn = event.target.closest('#guest-notifications-btn');
+      if (guestNotificationsBtn) {
+          this.showOrderStatusModal();
       }
     });
 
@@ -609,6 +623,11 @@ export class GuestModule {
     const loadingNotification = NotificationService.showLoading('Sifarişiniz göndərilir...');
 
     try {
+      this.userId = getCurrentUser()?.uid;
+      if (!this.userId) {
+          throw new Error("İstifadəçi təyin olunmayıb. Zəhmət olmasa yenidən daxil olun.");
+      }
+
       const newOrder = {
         tableNumber: finalTableNumber,
         items: guestCartService.getItems().map(item => ({
@@ -618,7 +637,7 @@ export class GuestModule {
           priceAtOrder: item.priceAtOrder
         })),
         status: 'pending',
-        timestamp: new Date().toISOString(), // This will be replaced by serverTimestamp in DataService
+        userId: this.userId,
         orderSource: this.guestTableNumber ? 'qr-code' : 'manual'
       };
 
@@ -628,6 +647,8 @@ export class GuestModule {
       
       if (result) {
         guestCartService.clear();
+        this.startOrderTracking();
+        
         // Clear local storage only after successful order and if not from QR initial load
         // If it was from QR, it might be a multi-order session
         const urlParams = new URLSearchParams(window.location.search);
@@ -659,7 +680,7 @@ export class GuestModule {
     } catch (error) {
       console.error('Error placing order:', error);
       NotificationService.hideLoading(loadingNotification);
-      NotificationService.show('🔌 Bağlantı xətası. İnternet bağlantınızı yoxlayın.', 'error');
+      NotificationService.show(`🔌 Sifariş zamanı xəta: ${error.message}`, 'error');
     } finally {
       placeOrderBtn.disabled = false;
       placeOrderBtn.innerHTML = this.guestTableNumber ? 'Sifarişi Tamamla' : 'Masa Nömrəsini Daxil Et';
@@ -770,5 +791,128 @@ export class GuestModule {
         }, 500);
       }
     }, 2000);
+  }
+
+  startOrderTracking() {
+    if (this.orderListenerUnsubscribe) {
+      this.orderListenerUnsubscribe(); // Stop previous listener
+    }
+
+    if (!this.userId) return;
+
+    this.orderListenerUnsubscribe = DataService.getOrdersForUser(this.userId, (orders) => {
+        this.handleOrderUpdates(orders);
+    });
+  }
+
+  handleOrderUpdates(orders) {
+      const guestNotificationsBtn = document.getElementById('guest-notifications-btn');
+      const badge = document.getElementById('guest-notification-badge');
+      
+      const activeOrders = orders.filter(o => !['paid', 'cancelled'].includes(o.status));
+
+      if (activeOrders.length > 0) {
+          guestNotificationsBtn.classList.remove('hidden');
+          badge.classList.remove('hidden');
+          badge.textContent = activeOrders.length;
+      } else {
+          guestNotificationsBtn.classList.add('hidden');
+          badge.classList.add('hidden');
+      }
+      
+      // If modal is open, update it
+      const modal = document.querySelector('.order-status-modal');
+      if (modal) {
+          this.renderOrderStatusModalContent(modal.querySelector('.modal-content-area'), activeOrders);
+      }
+  }
+
+  showOrderStatusModal() {
+      const container = document.getElementById('order-status-modal-container');
+      container.innerHTML = ''; // Clear previous modal
+
+      const modal = createElement('div', {
+          className: 'order-status-modal fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4'
+      });
+      
+      modal.innerHTML = `
+          <div class="ultra-modern-card p-0 w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
+              <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                  <h2 class="text-2xl font-bold text-slate-800">Sifarişlərimin Statusu</h2>
+                  <button class="close-modal w-8 h-8 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center text-slate-600">&times;</button>
+              </div>
+              <div class="modal-content-area p-6 overflow-y-auto">
+                  <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+              </div>
+          </div>
+      `;
+
+      container.appendChild(modal);
+
+      const closeModal = () => {
+          if (modal.parentNode) {
+              modal.parentNode.removeChild(modal);
+          }
+      };
+
+      modal.querySelector('.close-modal').addEventListener('click', closeModal);
+      modal.addEventListener('click', e => {
+          if (e.target === modal) {
+              closeModal();
+          }
+      });
+  }
+
+  renderOrderStatusModalContent(container, orders) {
+      if (orders.length === 0) {
+          container.innerHTML = `
+              <div class="text-center py-12">
+                  <p class="text-slate-500">Aktiv sifarişiniz yoxdur.</p>
+              </div>
+          `;
+          return;
+      }
+
+      container.innerHTML = orders.map(order => this.createOrderStatusTimeline(order)).join('');
+  }
+  
+  createOrderStatusTimeline(order) {
+    const statuses = [
+        { key: 'pending', text: 'Sifariş qəbul edildi' },
+        { key: 'in-prep', text: 'Mətbəxdə hazırlanır' },
+        { key: 'ready', text: 'Servisə hazırdır' },
+        { key: 'served', text: 'Təqdim edildi' }
+    ];
+    
+    const currentStatusIndex = statuses.findIndex(s => s.key === order.status);
+
+    const timelineItems = statuses.map((status, index) => {
+        const isCompleted = index < currentStatusIndex;
+        const isActive = index === currentStatusIndex;
+        const isFuture = index > currentStatusIndex;
+
+        let statusClass = 'timeline-item';
+        if (isCompleted) statusClass += ' completed';
+        if (isActive) statusClass += ' active';
+
+        return `
+            <div class="${statusClass}">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-slate-800">${status.text}</h4>
+                    <p class="text-xs text-slate-500">${isActive ? 'Hazırki status' : isCompleted ? 'Tamamlandı' : 'Gözlənilir'}</p>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    return `
+      <div class="ultra-modern-card p-5 mb-6">
+          <h3 class="text-lg font-bold text-slate-800 mb-4">Sifariş #${order.id.substring(0, 6)} (Masa ${order.tableNumber})</h3>
+          <div class="timeline">
+              ${timelineItems}
+          </div>
+      </div>
+    `;
   }
 }

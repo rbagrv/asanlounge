@@ -1,7 +1,7 @@
 {
-  "name": "restoran-sistemi",
+  "name": "eat-drink-app",
   "version": "1.0.0",
-  "description": "Online Restaurant Management System",
+  "description": "Online food and drink ordering system",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -26,8 +26,8 @@
     "electron-serve": "^1.1.0"
   },
   "build": {
-    "appId": "com.restaurant.system",
-    "productName": "Restoran Sistemi",
+    "appId": "com.eatanddrink.app",
+    "productName": "Eat & drink app",
     "directories": {
       "output": "dist"
     },

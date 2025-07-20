@@ -21,7 +21,7 @@ function createWindow() {
       webSecurity: true
     },
     icon: path.join(__dirname, 'assets/icon.png'),
-    title: 'Restoran Sistemi',
+    title: 'Eat & drink app',
     show: false,
     titleBarStyle: 'default'
   });
@@ -173,9 +173,9 @@ function createMenu() {
           click: () => {
             dialog.showMessageBox(mainWindow, {
               type: 'info',
-              title: 'Haqqında',
-              message: 'Restoran Sistemi v1.0.0',
-              detail: 'Online restoran idarəetmə sistemi\nElectron.js ilə hazırlanmışdır',
+              title: 'Eat & drink app haqqında',
+              message: 'Eat & drink app v1.0.0',
+              detail: 'Onlayn yemək və içki sifariş sistemi\nElectron.js ilə hazırlanmışdır',
               buttons: ['OK']
             });
           }

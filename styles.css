@@ -26,6 +26,33 @@ body {
     animation: fadeIn 0.3s ease-out;
 }
 
+#splash-screen {
+    transition: opacity 0.7s ease-out, visibility 0.7s ease-out;
+}
+
+#splash-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+@keyframes pulse-logo {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.2));
+    }
+    50% {
+        transform: scale(1.08);
+        opacity: 0.95;
+        filter: drop-shadow(0 0 25px rgba(102, 126, 234, 0.4));
+    }
+}
+
+.animate-pulse-logo {
+    animation: pulse-logo 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 .animate-fade-in {
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -84,8 +111,12 @@ body {
 }
 
 .modern-btn:hover {
-    transform: translateY(-2px) scale(1.02);
+    transform: translateY(-1px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modern-btn:active {
+    transform: translateY(0);
 }
 
 .modern-btn::before {
@@ -156,6 +187,27 @@ body {
     left: 100%;
 }
 
+.icon-btn {
+    position: relative;
+    height: 2.5rem; /* h-10 */
+    width: 2.5rem; /* w-10 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px; /* rounded-full */
+    color: #475569; /* text-slate-600 */
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon-btn:hover {
+    color: #0284c7; /* hover:text-primary-600 */
+    background-color: white;
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: translateY(-2px);
+}
+
 /* Modern input styling */
 .modern-input {
     background: rgba(255, 255, 255, 0.9);
@@ -224,6 +276,21 @@ body {
     animation: slideInFromTop 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@keyframes scale-in {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-scale-in {
+    animation: scale-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Enhanced modern card styles */
 .ultra-modern-card {
     background: rgba(255, 255, 255, 0.98);
@@ -246,7 +313,9 @@ body {
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    opacity: 0;
+    transition: opacity 0.4s ease;
 }
 
 .ultra-modern-card:hover {
@@ -285,7 +354,7 @@ body {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #667eea, #764ba2);
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
     opacity: 0;
     transition: opacity 0.4s ease;
 }
@@ -443,23 +512,31 @@ body {
     overflow: hidden;
 }
 
-@media (min-width: 640px) {
-    .cart-container {
-        border-radius: 28px;
-        box-shadow: 0 32px 64px rgba(0, 0, 0, 0.2);
+.pos-floating-cart-summary {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    padding: 1rem;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    z-index: 40;
+}
+
+/* Only show floating cart on mobile/tablet */
+@media (min-width: 1024px) {
+    .pos-floating-cart-summary {
+        display: none;
     }
 }
 
-@media (min-width: 641px) and (max-width: 768px) {
-    .max-w-7xl {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .grid-cols-2 {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
+@media (min-width: 640px) {
     .cart-container {
         max-width: 24rem;
         width: 24rem;
@@ -560,7 +637,7 @@ body {
 }
 
 .product-card:hover img {
-    transform: scale(1.15) rotate(1deg);
+    transform: scale(1.1) rotate(1deg);
 }
 
 /* Form enhancements */
@@ -763,135 +840,182 @@ body {
     }
 }
 
-/* Mobile-specific improvements */
-@media (max-width: 640px) {
-    .animate-slide-in {
-        animation: slideInFromTop 0.3s ease-out;
-    }
-    
-    .fade-in {
-        animation: fadeIn 0.2s ease-out;
-    }
-    
-    .hover\:scale-105:hover {
-        transform: none;
-    }
-    
-    .hover\:-translate-y-0\.5:hover {
-        transform: none;
-    }
-    
-    .transform {
-        transform: none;
-    }
-    
-    .card-hover:hover {
-        transform: none;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    
-    .ultra-modern-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-    
-    .product-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-    
-    .kitchen-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
-    }
+/* Admin Sidebar Menu Styles */
+.admin-sidebar {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(25px);
+    border-right: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Touch-friendly buttons */
-@media (max-width: 768px) {
-    button, .modern-btn, .premium-gradient-btn, .category-filter-btn {
-        min-height: 44px;
-        touch-action: manipulation;
-    }
-    
-    input, select, textarea {
-        min-height: 44px;
-        font-size: 16px; /* Prevents zoom on iOS */
-    }
+.admin-menu-item {
+    color: #64748b; /* slate-500 */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Better spacing for mobile */
-@media (max-width: 640px) {
-    .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-        margin-top: 1rem;
-    }
-    
-    .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-        margin-top: 1rem;
-    }
-    
-    .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-        margin-top: 0.75rem;
-    }
-    
-    .gap-8 {
-        gap: 1rem;
-    }
-    
-    .gap-6 {
-        gap: 0.75rem;
-    }
-    
-    .mb-12 {
-        margin-bottom: 2rem;
-    }
-    
-    .mb-10 {
-        margin-bottom: 1.5rem;
-    }
-    
-    .mb-8 {
-        margin-bottom: 1.5rem;
-    }
-    
-    .mb-6 {
-        margin-bottom: 1rem;
-    }
-    
-    .p-8 {
-        padding: 1.5rem;
-    }
-    
-    .p-6 {
-        padding: 1rem;
-    }
-    
-    .px-6 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-    
-    .py-6 {
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-    }
+.admin-menu-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #475569; /* slate-600 */
+    transform: translateX(4px);
 }
 
-/* Loading animation */
-.loading-spinner {
-    border: 3px solid rgba(102, 126, 234, 0.2);
-    border-top: 3px solid #667eea;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+.admin-menu-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.admin-menu-item.active:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateX(4px);
 }
 
-/* New style for cashier mark as paid button to distinguish */
+.admin-menu-item svg {
+    transition: transform 0.3s ease;
+}
+
+.admin-menu-item:hover svg {
+    transform: scale(1.1);
+}
+
+.admin-menu-item.active svg {
+    color: white;
+}
+
+/* POS Layout */
+.pos-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    position: fixed; /* Ensures it covers the whole screen */
+    top: 0;
+    left: 0;
+    z-index: 999; /* Above regular app content */
+}
+
+.pos-header {
+    flex-shrink: 0;
+}
+
+.pos-func-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.pos-func-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.pos-category-btn {
+    transition: all 0.2s ease-in-out;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background-color: #e2e8f0; /* slate-200 */
+    color: #334155; /* slate-700 */
+}
+
+.pos-category-btn:hover {
+    background-color: #cbd5e1; /* slate-300 */
+}
+
+.pos-category-btn.active {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); /* primary-500 to primary-600 */
+    color: white;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+    transform: scale(1.05);
+}
+
+.pos-category-btn.campaign-btn {
+    background-color: #fef3c7; /* amber-100 */
+    color: #b45309; /* amber-700 */
+}
+
+.pos-category-btn.campaign-btn.active {
+     background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* amber-500 to amber-600 */
+     color: white;
+     box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+}
+
+.pos-product-card {
+    position: relative;
+    border-radius: 0.75rem; /* rounded-xl */
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.pos-product-card:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.pos-product-card.out-of-stock {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.pos-product-card .product-name {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+}
+
+.pos-current-order-items {
+    overflow-y: auto;
+    padding-right: 1rem; /* Space for scrollbar */
+}
+
+/* Custom Scrollbar for POS Panels */
+.custom-scroll::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5); /* slate-100 semi-transparent */
+    border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to)); /* Uses current Tailwind colors */
+    border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #0284c7, #0ea5e9);
+}
+
+.pos-action-btn {
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease-in-out;
+    border: none;
+}
+
+.pos-action-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.pos-action-btn:disabled {
+    cursor: not-allowed;
+}
+
+/* Specific button styles for POS actions (reusing existing where possible) */
 .mark-as-paid-btn {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%); /* Emerald to green */
     position: relative;
@@ -923,11 +1047,143 @@ body {
     left: 100%;
 }
 
-.pos-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background-color: #f1f5f9; /* slate-100 */
-    display: flex;
-    flex-direction: column;
+.pos-cart-item .cart-quantity-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background-color: #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.pos-cart-item .cart-quantity-btn:hover {
+    background-color: #cbd5e1;
+    transform: scale(1.1);
+}
+
+.pos-cart-item .cart-remove-btn {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-weight: 800;
+    font-size: 1rem;
+    border: none;
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.pos-cart-item .cart-remove-btn:hover {
+    background-color: #fecaca;
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* Compact order list items for POS */
+.pos-order-list-item {
+    padding: 8px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.pos-order-list-item h4 {
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.pos-order-list-item p {
+    font-size: 11px;
+    margin-bottom: 1px;
+}
+
+/* Loading animation */
+.loading-spinner {
+    border: 3px solid rgba(102, 126, 234, 0.2);
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Order Status Timeline styles */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+    border-left: 2px solid #e2e8f0; /* slate-200 */
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -2.5rem;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background-color: #cbd5e1; /* slate-300 */
+    border: 2px solid white;
+    transition: all 0.3s ease;
+}
+
+.timeline-item.active .timeline-dot {
+    background-color: #3b82f6; /* blue-500 */
+    transform: scale(1.2);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+}
+
+.timeline-item.completed .timeline-dot {
+    background-color: #10b981; /* emerald-500 */
+}
+
+.timeline-content h4 {
+    transition: color 0.3s ease;
+}
+
+.timeline-item.active .timeline-content h4 {
+    color: #1e293b; /* slate-800 */
+}
+
+.timeline-item.completed .timeline-content h4 {
+    color: #1e293b; /* slate-800 */
+}
+
+.timeline-item:not(.completed):not(.active) .timeline-content h4 {
+    color: #94a3b8; /* slate-400 */
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Admin panel container */
+.admin-panel-container {
+    height: calc(100vh - 3.5rem); /* Full viewport height minus header */
+}
+
+@media (min-width: 1024px) {
+    .admin-panel-container {
+        height: 100vh;
+    }
 }

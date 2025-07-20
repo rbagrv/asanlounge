@@ -1,4 +1,4 @@
-# Restoran Sistemi - Electron Versiyası
+# Eat & drink app - Electron Versiyası
 
 Bu proje Electron.js istifadə edərək masaüstü tətbiqi olaraq hazırlanmışdır.
 
@@ -8,4 +8,4 @@ Bu proje Electron.js istifadə edərək masaüstü tətbiqi olaraq hazırlanmı�
 2. Dependencies quraşdırın:
 ```bash
 npm install
-
+```

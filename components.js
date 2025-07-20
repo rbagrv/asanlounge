@@ -247,7 +247,7 @@ export const createAdminProductForm = (product = null, categories = []) => {
                     class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <span class="flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2a2 2 0 002-2V9a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                     </svg>
                     <span>${product ? 'Yenilə' : 'Əlavə et'}</span>
                 </span>
@@ -313,7 +313,7 @@ export const createTableCard = (table) => {
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-xl font-bold text-gray-800">Masa ${table.number}</h3>
             <span class="px-3 py-1 rounded-full text-sm font-semibold ${table.isOccupied ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                ${table.isOccupied ? 'Məşğul' : 'Boş'}
+                ${table.isOccupied ? 'Məişğul' : 'Boş'}
             </span>
         </div>
         <p class="text-gray-600 mb-4">Tutum: ${table.capacity} nəfər</p>
@@ -335,13 +335,13 @@ export const createAnalyticsCard = (title, value, subtitle = '', color = 'blue')
     
     const iconMap = {
         'blue': `<svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                  </svg>`,
         'green': `<svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2a2 2 0 002-2V9a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v2z"></path>
-                 </svg>`,
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                   </svg>`,
         'purple': `<svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                    </svg>`,
         'orange': `<svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -420,7 +420,7 @@ export const createKitchenOrderCard = (order) => {
                 <button class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-3 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 kitchen-status-btn text-sm" data-status="in-prep">
                     <span class="flex items-center justify-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                         </svg>
                         <span>Hazırlamaya başla</span>
                     </span>
@@ -460,31 +460,22 @@ export const createDiscountForm = (discount = null) => {
         <input type="hidden" name="id" value="${discount ? discount.id : ''}">
         <div>
             <label for="discountName" class="block text-sm font-bold text-slate-700 mb-2">Endirim adı</label>
-            <input type="text" id="discountName" name="name" value="${discount ? discount.name : ''}" required
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. Yay Endirimi">
+            <input type="text" id="discountName" name="name" value="${discount ? discount.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Yay Endirimi">
         </div>
         <div>
             <label for="discountDescription" class="block text-sm font-bold text-slate-700 mb-2">Təsvir</label>
-            <textarea id="discountDescription" name="description" rows="3"
-                      class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200 resize-none"
-                      placeholder="Endirim haqqında qısa məlumat...">${discount ? discount.description : ''}</textarea>
+            <textarea id="discountDescription" name="description" rows="3" class="ultra-modern-input w-full px-4 py-3 resize-none" placeholder="Endirim haqqında qısa məlumat...">${discount ? discount.description : ''}</textarea>
         </div>
         <div>
             <label for="discountPercentage" class="block text-sm font-bold text-slate-700 mb-2">Endirim Faizi (%)</label>
-            <input type="number" id="discountPercentage" name="percentage" min="0" max="100" value="${discount ? discount.percentage : 0}" required
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="0">
+            <input type="number" id="discountPercentage" name="percentage" min="0" max="100" value="${discount ? discount.percentage : 0}" required class="ultra-modern-input w-full px-4 py-3" placeholder="0">
         </div>
         <div class="flex items-center space-x-2">
             <input type="checkbox" id="discountIsActive" name="isActive" ${discount === null || discount.isActive ? 'checked' : ''}
                    class="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 focus:ring-2">
             <label for="discountIsActive" class="text-sm font-bold text-slate-700">Aktivdir</label>
         </div>
-        <button type="submit" 
-                class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-            ${discount ? 'Endirimi Yenilə' : 'Endirim Əlavə Et'}
-        </button>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${discount ? 'Endirimi Yenilə' : 'Endirim Əlavə Et'}</button>
     `;
     return form;
 };
@@ -499,25 +490,18 @@ export const createTableForm = (table = null) => {
         <input type="hidden" name="id" value="${table ? table.id : ''}">
         <div>
             <label for="tableNumber" class="block text-sm font-bold text-slate-700 mb-2">Masa Nömrəsi</label>
-            <input type="number" id="tableNumber" name="number" value="${table ? table.number : ''}" required min="1"
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. 5">
+            <input type="number" id="tableNumber" name="number" value="${table ? table.number : ''}" required min="1" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. 5">
         </div>
         <div>
             <label for="tableCapacity" class="block text-sm font-bold text-slate-700 mb-2">Tutum (nəfər)</label>
-            <input type="number" id="tableCapacity" name="capacity" value="${table ? table.capacity : ''}" required min="1"
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. 4">
+            <input type="number" id="tableCapacity" name="capacity" value="${table ? table.capacity : ''}" required min="1" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. 4">
         </div>
         <div class="flex items-center space-x-2">
             <input type="checkbox" id="tableIsOccupied" name="isOccupied" ${table && table.isOccupied ? 'checked' : ''}
                    class="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 focus:ring-2">
             <label for="tableIsOccupied" class="text-sm font-bold text-slate-700">Məşğuldur</label>
         </div>
-        <button type="submit" 
-                class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-            ${table ? 'Masayı Yenilə' : 'Masa Əlavə Et'}
-        </button>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${table ? 'Masayı Yenilə' : 'Masa Əlavə Et'}</button>
     `;
     return form;
 };
@@ -532,34 +516,23 @@ export const createInventoryItemForm = (item = null) => {
         <input type="hidden" name="id" value="${item ? item.id : ''}">
         <div>
             <label for="itemName" class="block text-sm font-bold text-slate-700 mb-2">Məhsul adı</label>
-            <input type="text" id="itemName" name="name" value="${item ? item.name : ''}" required
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. Pomidor">
+            <input type="text" id="itemName" name="name" value="${item ? item.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Pomidor">
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="itemQuantity" class="block text-sm font-bold text-slate-700 mb-2">Miqdar</label>
-                <input type="number" id="itemQuantity" name="quantity" value="${item ? item.quantity : 0}" required min="0" step="0.01"
-                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                       placeholder="0">
+                <input type="number" id="itemQuantity" name="quantity" value="${item ? item.quantity : 0}" required min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="0">
             </div>
             <div>
                 <label for="itemUnit" class="block text-sm font-bold text-slate-700 mb-2">Vahid</label>
-                <input type="text" id="itemUnit" name="unit" value="${item ? item.unit : ''}" required
-                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                       placeholder="Məs. kq, litr, ədəd">
+                <input type="text" id="itemUnit" name="unit" value="${item ? item.unit : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. kq, litr, ədəd">
             </div>
         </div>
         <div>
             <label for="lowStockThreshold" class="block text-sm font-bold text-slate-700 mb-2">Minimum Stok Həddi</label>
-            <input type="number" id="lowStockThreshold" name="lowStockThreshold" value="${item ? item.lowStockThreshold : 0}" min="0" step="0.01"
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="10">
+            <input type="number" id="lowStockThreshold" name="lowStockThreshold" value="${item ? item.lowStockThreshold : 0}" min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="10">
         </div>
-        <button type="submit" 
-                class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-            ${item ? 'Məhsulu Yenilə' : 'Məhsul Əlavə Et'}
-        </button>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${item ? 'Məhsulu Yenilə' : 'Məhsul Əlavə Et'}</button>
     `;
     return form;
 };
@@ -574,40 +547,27 @@ export const createPurchaseForm = (purchase = null) => {
         <input type="hidden" name="id" value="${purchase ? purchase.id : ''}">
         <div>
             <label for="purchaseItemName" class="block text-sm font-bold text-slate-700 mb-2">Məhsul adı</label>
-            <input type="text" id="purchaseItemName" name="itemName" value="${purchase ? purchase.itemName : ''}" required
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. Un">
+            <input type="text" id="purchaseItemName" name="itemName" value="${purchase ? purchase.itemName : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Un">
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label for="purchaseQuantity" class="block text-sm font-bold text-slate-700 mb-2">Miqdar</label>
-                <input type="number" id="purchaseQuantity" name="quantity" value="${purchase ? purchase.quantity : 0}" required min="0" step="0.01"
-                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                       placeholder="0">
+                <input type="number" id="purchaseQuantity" name="quantity" value="${purchase ? purchase.quantity : 0}" required min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="0">
             </div>
             <div>
                 <label for="purchaseUnitCost" class="block text-sm font-bold text-slate-700 mb-2">Vahid Qiyməti (AZN)</label>
-                <input type="number" id="purchaseUnitCost" name="unitCost" value="${purchase ? purchase.unitCost : 0}" required min="0" step="0.01"
-                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                       placeholder="0.00">
+                <input type="number" id="purchaseUnitCost" name="unitCost" value="${purchase ? purchase.unitCost : 0}" required min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="0.00">
             </div>
         </div>
         <div>
             <label for="purchaseSupplier" class="block text-sm font-bold text-slate-700 mb-2">Təchizatçı</label>
-            <input type="text" id="purchaseSupplier" name="supplier" value="${purchase ? purchase.supplier : ''}"
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. Market X">
+            <input type="text" id="purchaseSupplier" name="supplier" value="${purchase ? purchase.supplier : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Market X">
         </div>
         <div>
             <label for="purchaseNotes" class="block text-sm font-bold text-slate-700 mb-2">Qeydlər</label>
-            <textarea id="purchaseNotes" name="notes" rows="3"
-                      class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200 resize-none"
-                      placeholder="Əlavə qeydlər...">${purchase ? purchase.notes : ''}</textarea>
+            <textarea id="purchaseNotes" name="notes" rows="3" class="ultra-modern-input w-full px-4 py-3 resize-none" placeholder="Əlavə qeydlər...">${purchase ? purchase.notes : ''}</textarea>
         </div>
-        <button type="submit" 
-                class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-            ${purchase ? 'Alışı Yenilə' : 'Alış Əlavə Et'}
-        </button>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${purchase ? 'Alışı Yenilə' : 'Alış Əlavə Et'}</button>
     `;
     return form;
 };
@@ -622,20 +582,15 @@ export const createEmployeeForm = (employee = null) => {
         <input type="hidden" name="id" value="${employee ? employee.id : ''}">
         <div>
             <label for="employeeEmail" class="block text-sm font-bold text-slate-700 mb-2">Email</label>
-            <input type="email" id="employeeEmail" name="email" value="${employee ? employee.email : ''}" required
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="işçi@restoran.com">
+            <input type="email" id="employeeEmail" name="email" value="${employee ? employee.email : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="işçi@restoran.com">
         </div>
         <div>
             <label for="employeePassword" class="block text-sm font-bold text-slate-700 mb-2">Şifrə</label>
-            <input type="password" id="employeePassword" name="password" ${employee ? '' : 'required'}
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="${employee ? 'Dəyişmək üçün yeni şifrə daxil edin' : '••••••••'}">
+            <input type="password" id="employeePassword" name="password" ${employee ? '' : 'required'} class="ultra-modern-input w-full px-4 py-3" placeholder="${employee ? 'Dəyişmək üçün yeni şifrə daxil edin' : '••••••••'}">
         </div>
         <div>
             <label for="employeeRole" class="block text-sm font-bold text-slate-700 mb-2">Rol</label>
-            <select id="employeeRole" name="role" required
-                    class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200">
+            <select id="employeeRole" name="role" required class="ultra-modern-input w-full px-4 py-3">
                 <option value="">Rol seçin</option>
                 <option value="waiter" ${employee && employee.role === 'waiter' ? 'selected' : ''}>Ofisant</option>
                 <option value="cashier" ${employee && employee.role === 'cashier' ? 'selected' : ''}>Kassir</option>
@@ -643,10 +598,7 @@ export const createEmployeeForm = (employee = null) => {
                 <option value="admin" ${employee && employee.role === 'admin' ? 'selected' : ''}>Admin</option>
             </select>
         </div>
-        <button type="submit" 
-                class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-            ${employee ? 'İşçini Yenilə' : 'İşçi Əlavə Et'}
-        </button>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${employee ? 'İşçini Yenilə' : 'İşçi Əlavə Et'}</button>
     `;
     return form;
 };
@@ -661,14 +613,201 @@ export const createCategoryForm = (category = null) => {
         <input type="hidden" name="id" value="${category ? category.id : ''}">
         <div>
             <label for="categoryName" class="block text-sm font-bold text-slate-700 mb-2">Kateqoriya adı</label>
-            <input type="text" id="categoryName" name="name" value="${category ? category.name : ''}" required
-                   class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
-                   placeholder="Məs. Səhər Yeməkləri">
+            <input type="text" id="categoryName" name="name" value="${category ? category.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Səhər Yeməkləri">
         </div>
-        <button type="submit" 
-                class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-            ${category ? 'Kateqoriyanı Yenilə' : 'Kateqoriya Əlavə Et'}
-        </button>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${category ? 'Kateqoriyanı Yenilə' : 'Kateqoriya Əlavə Et'}</button>
     `;
     return form;
+};
+
+export const createRecipeForm = (recipe = null, products = [], inventoryItems = []) => {
+    const form = createElement('form', {
+        id: recipe ? `edit-recipe-form-${recipe.id}` : 'add-recipe-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${recipe ? recipe.id : ''}">
+        <div>
+            <label for="recipeProductId" class="block text-sm font-bold text-slate-700 mb-2">Məhsul</label>
+            <select id="recipeProductId" name="productId" required class="ultra-modern-input w-full px-4 py-3">
+                <option value="">Məhsul seçin</option>
+                ${products.map(p => `<option value="${p.id}" ${recipe && recipe.productId === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">Tərkibi</label>
+            <div id="ingredients-container" class="space-y-2">
+                <!-- Ingredient rows will be added here -->
+            </div>
+            <button type="button" id="add-ingredient-btn" class="mt-2 text-sm text-primary-600 hover:text-primary-800 font-semibold">+ Tərkib əlavə et</button>
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${recipe ? 'Resepti Yenilə' : 'Resept Əlavə Et'}</button>
+    `;
+    return form;
+};
+
+export const createSupplierForm = (supplier = null) => {
+    const form = createElement('form', {
+        id: supplier ? `edit-supplier-form-${supplier.id}` : 'add-supplier-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${supplier ? supplier.id : ''}">
+        <div>
+            <label for="supplierName" class="block text-sm font-bold text-slate-700 mb-2">Təchizatçı Adı</label>
+            <input type="text" name="name" value="${supplier ? supplier.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. ABC Qida">
+        </div>
+        <div>
+            <label for="contactPerson" class="block text-sm font-bold text-slate-700 mb-2">Əlaqədar şəxs</label>
+            <input type="text" name="contactPerson" value="${supplier ? supplier.contactPerson : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Əli Vəliyev">
+        </div>
+        <div>
+            <label for="supplierPhone" class="block text-sm font-bold text-slate-700 mb-2">Telefon</label>
+            <input type="tel" name="phone" value="${supplier ? supplier.phone : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="+994...">
+        </div>
+         <div>
+            <label for="supplierEmail" class="block text-sm font-bold text-slate-700 mb-2">Email</label>
+            <input type="email" name="email" value="${supplier ? supplier.email : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="contact@supplier.com">
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${supplier ? 'Təchizatçını Yenilə' : 'Təchizatçı Əlavə Et'}</button>
+    `;
+    return form;
+};
+
+export const createUserCard = (user) => {
+    const card = createElement('div', {
+        className: 'ultra-modern-card p-5 text-center',
+        dataset: { userId: user.id }
+    });
+
+    const roleColorMap = {
+        admin: 'bg-red-100 text-red-800',
+        manager: 'bg-purple-100 text-purple-800',
+        cashier: 'bg-blue-100 text-blue-800',
+        waiter: 'bg-green-100 text-green-800',
+        guest: 'bg-slate-100 text-slate-800',
+        'guest-anonymous': 'bg-gray-100 text-gray-800',
+    };
+
+    const registrationDate = user.createdAt && user.createdAt.seconds
+        ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
+        : 'Naməlum';
+    
+    const roleText = (user.role || 'guest').replace('guest-anonymous', 'Anonim Qonaq');
+
+    card.innerHTML = `
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-200 to-accent-200 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        </div>
+        <h4 class="font-bold text-slate-800 truncate" title="${user.email}">${user.email}</h4>
+        <div class="mt-2 mb-3">
+            <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize ${roleColorMap[user.role] || roleColorMap.guest}">
+                ${roleText}
+            </span>
+        </div>
+        <p class="text-xs text-slate-500">Qeydiyyat: ${registrationDate}</p>
+    `;
+
+    return card;
+};
+
+export const createSalesTableRow = (order) => {
+    const row = createElement('tr', {
+        className: 'bg-white border-b hover:bg-slate-50'
+    });
+
+    const total = order.total || order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+    const date = order.createdAt && order.createdAt.seconds 
+        ? new Date(order.createdAt.seconds * 1000).toLocaleString('az-AZ')
+        : '---';
+
+    row.innerHTML = `
+        <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">#${order.id.substring(0, 8)}</td>
+        <td class="px-6 py-4">${order.tableNumber}</td>
+        <td class="px-6 py-4">${date}</td>
+        <td class="px-6 py-4">${order.items.length}</td>
+        <td class="px-6 py-4 font-bold text-green-600">${total.toFixed(2)} AZN</td>
+    `;
+    return row;
+};
+
+export const createPOSOrderListItem = (order, isSelected) => {
+    const total = order.total || order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+    const timeText = order.createdAt && order.createdAt.seconds 
+        ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })
+        : '---';
+
+    const statusClass = StatusUtils.getKitchenStatusBadgeColor(order.status);
+    const selectedClass = isSelected ? 'border-primary-500 ring-2 ring-primary-300 shadow-lg scale-105' : 'border-slate-200';
+
+    return createElement('div', {
+        className: `pos-order-list-item ultra-modern-card p-3 cursor-pointer transition-all duration-200 ${selectedClass}`,
+        dataset: { orderId: order.id }
+    }, [
+        createElement('div', { className: 'flex justify-between items-center mb-2' }, [
+            createElement('h4', { className: 'font-bold text-base text-slate-800' }, `Masa ${order.tableNumber}`),
+            createElement('span', { className: `px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}` }, StatusUtils.getStatusText(order.status))
+        ]),
+        createElement('div', { className: 'flex justify-between items-center text-sm' }, [
+            createElement('p', { className: 'text-slate-600' }, `${order.items.length} məhsul`),
+            createElement('p', { className: 'font-bold text-primary-700' }, `${total.toFixed(2)} AZN`)
+        ]),
+        createElement('p', { className: 'text-xs text-slate-500 mt-1 text-right' }, `Sifariş: ${timeText}`)
+    ]);
+};
+
+export const createPOSProductCard = (product) => {
+    const price = product.discountPercentage > 0 
+        ? (product.price * (1 - product.discountPercentage / 100)) 
+        : product.price;
+
+    const stock = product.stock !== undefined ? product.stock : 99;
+    const outOfStock = stock <= 0;
+
+    const card = createElement('div', {
+        className: `pos-product-card group ${outOfStock ? 'out-of-stock' : ''}`,
+        dataset: { productId: product.id }
+    });
+
+    card.innerHTML = `
+        <div class="relative w-full aspect-square overflow-hidden rounded-xl shadow-inner">
+            <img src="${product.imageUrl || 'https://placehold.co/200x200/e0f2fe/0284c7?text=No+Image'}" 
+                 alt="${product.name}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            ${outOfStock ? `<div class="absolute inset-0 bg-white/70 flex items-center justify-center"><span class="font-bold text-red-500">Stokda yoxdur</span></div>` : ''}
+        </div>
+        <h4 class="product-name font-semibold text-xs text-white absolute bottom-2 left-2 right-2 truncate px-1">${product.name}</h4>
+        <span class="product-price absolute top-1.5 right-1.5 bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">${price.toFixed(2)}</span>
+    `;
+    
+    card.querySelector('img').onerror = function() {
+        this.src = 'https://placehold.co/200x200/e0f2fe/0284c7?text=No+Image';
+    };
+
+    return card;
+};
+
+export const createPOSCartItem = (item, index) => {
+    const itemEl = createElement('div', {
+        className: 'pos-cart-item flex items-center p-2 rounded-lg hover:bg-slate-100 transition-colors',
+        dataset: { index: index }
+    });
+
+    itemEl.innerHTML = `
+        <div class="flex-1 pr-2">
+            <p class="font-semibold text-sm text-slate-800 leading-tight line-clamp-1">${item.name}</p>
+            <p class="text-xs text-slate-500">${item.priceAtOrder.toFixed(2)} AZN</p>
+        </div>
+        <div class="flex items-center space-x-1">
+            <button class="cart-quantity-btn" data-action="decrease">-</button>
+            <input type="number" value="${item.quantity}" min="1" class="w-8 text-center text-sm font-semibold bg-transparent focus:outline-none">
+            <button class="cart-quantity-btn" data-action="increase">+</button>
+        </div>
+        <p class="w-16 text-right font-bold text-sm text-primary-700">${(item.priceAtOrder * item.quantity).toFixed(2)}</p>
+        <button class="cart-remove-btn" data-action="remove">&times;</button>
+    `;
+
+    return itemEl;
 };
