@@ -1105,3 +1105,67 @@ body {
     background-color: #fecaca; /* red-200 */
     transform: scale(1.1) rotate(15deg); /* Slightly more dynamic */
 }
+
+/* Timeline styles for order status modal */
+.timeline {
+    position: relative;
+    padding: 20px 0 0 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10px;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, #d1d5db, #e2e8f0); /* slate-300 to slate-200 */
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 25px;
+}
+
+.timeline-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #e2e8f0; /* slate-200 */
+    border: 2px solid #cbd5e1; /* slate-300 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.timeline-item.completed .timeline-dot {
+    background-color: #10b981; /* green-500 */
+    border-color: #059669; /* green-600 */
+}
+
+.timeline-item.active .timeline-dot {
+    background-color: #3b82f6; /* primary-500 */
+    border-color: #2563eb; /* primary-600 */
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+    animation: pulse-dot 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.5);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0px rgba(59, 130, 246, 0);
+    }
+}

@@ -447,6 +447,35 @@ export class DataService {
 
   // --- New Data Services for Admin Panel Sections ---
 
+  /**
+   * Saves or updates a guest's profile in the 'users' collection.
+   * Uses the Firebase anonymous UID as the document ID.
+   * @param {string} userId - The Firebase anonymous user ID.
+   * @param {string} name - The guest's name.
+   * @param {string} mobile - The guest's mobile number.
+   * @returns {Promise<boolean>} - True if successful, false otherwise.
+   */
+  static async saveGuestProfile(userId, name, mobile) {
+    if (!userId) {
+      console.error("Cannot save guest profile: userId is null.");
+      return false;
+    }
+    try {
+      const userRef = doc(db, 'users', userId);
+      await setDoc(userRef, {
+        name: name,
+        mobile: mobile,
+        role: 'guest-anonymous', // Assign a specific role for anonymous guests
+        createdAt: serverTimestamp() // Will only set on initial creation
+      }, { merge: true }); // Merge true ensures other fields are not overwritten if document exists
+      console.log(`Guest profile for ${userId} saved/updated.`);
+      return true;
+    } catch (error) {
+      console.error("Error saving guest profile:", error);
+      return false;
+    }
+  }
+
   static async getDiscounts() {
     try {
       const discountsCol = collection(db, 'discounts');

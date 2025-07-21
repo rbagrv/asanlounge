@@ -214,40 +214,31 @@ const renderWaiterSection = (container) => {
         inprepOrders.innerHTML = '';
         readyOrders.innerHTML = '';
         
-        // Sort orders by status
-        const pending = orders.filter(order => order.status === 'pending');
-        const inprep = orders.filter(order => order.status === 'in-prep');
-        const ready = orders.filter(order => order.status === 'ready');
-        
         // Update counts
-        pendingOrdersCount.textContent = pending.length;
-        inprepOrdersCount.textContent = inprep.length;
-        readyOrdersCount.textContent = ready.length;
+        pendingOrdersCount.textContent = orders.filter(order => order.status === 'pending').length;
+        inprepOrdersCount.textContent = orders.filter(order => order.status === 'in-prep').length;
+        readyOrdersCount.textContent = orders.filter(order => order.status === 'ready').length;
         
         // Render orders in respective columns
-        pending.forEach(order => {
-            if (!isFirstLoad && !knownOrderIds.has(order.id)) {
+        orders.forEach(order => {
+            if (!isFirstLoad && order.status === 'pending' && !knownOrderIds.has(order.id)) {
                 playNewOrderSound();
                 NotificationService.show(`Yeni sifariş: Masa ${order.tableNumber}`, 'info');
             }
             newKnownOrderIds.add(order.id);
-            pendingOrders.appendChild(createKitchenOrderCard(order));
-        });
-        
-        inprep.forEach(order => {
-            newKnownOrderIds.add(order.id);
-            inprepOrders.appendChild(createKitchenOrderCard(order));
-        });
-        
-        ready.forEach(order => {
-            newKnownOrderIds.add(order.id);
-            readyOrders.appendChild(createKitchenOrderCard(order));
+            if (order.status === 'pending') {
+                pendingOrders.appendChild(createKitchenOrderCard(order));
+            } else if (order.status === 'in-prep') {
+                inprepOrders.appendChild(createKitchenOrderCard(order));
+            } else if (order.status === 'ready') {
+                readyOrders.appendChild(createKitchenOrderCard(order));
+            }
         });
         
         knownOrderIds = newKnownOrderIds;
 
         // Add empty states
-        if (pending.length === 0) {
+        if (orders.filter(order => order.status === 'pending').length === 0) {
             const emptyState = createElement('div', { className: 'text-center py-8 sm:py-12' });
             emptyState.innerHTML = `
                 <div class="text-slate-400 mb-4">
@@ -260,7 +251,7 @@ const renderWaiterSection = (container) => {
             pendingOrders.appendChild(emptyState);
         }
         
-        if (inprep.length === 0) {
+        if (orders.filter(order => order.status === 'in-prep').length === 0) {
             const emptyState = createElement('div', { className: 'text-center py-8 sm:py-12' });
             emptyState.innerHTML = `
                 <div class="text-slate-400 mb-4">
@@ -273,7 +264,7 @@ const renderWaiterSection = (container) => {
             inprepOrders.appendChild(emptyState);
         }
         
-        if (ready.length === 0) {
+        if (orders.filter(order => order.status === 'ready').length === 0) {
             const emptyState = createElement('div', { className: 'text-center py-8 sm:py-12' });
             emptyState.innerHTML = `
                 <div class="text-slate-400 mb-4">

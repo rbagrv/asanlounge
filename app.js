@@ -56,7 +56,9 @@ const showSection = (role) => {
         sections[role].classList.remove('hidden');
         if (role === 'guest' || role === 'guest-anonymous') {
             // Render guestApp. It will handle its own state, including table number.
+            // The guestApp itself will handle prompting for table/customer info if missing
             guestApp.render(sections[role]);
+            guestNotificationsBtn.classList.remove('hidden'); // Guest should always see their notifications btn
         }
         if (role === 'waiter') renderWaiterSection(sections[role]);
         // Admin, Manager, Cashier roles all use the admin panel structure
@@ -114,9 +116,13 @@ const initializeApp = async () => {
     if (tableFromUrl) {
         const parsedTable = parseInt(tableFromUrl);
         if (parsedTable > 0) {
+            // Set guestTableNumber from URL, also store in localStorage
             guestApp.guestTableNumber = parsedTable;
-            localStorage.setItem('guestTableNumber', parsedTable); // Store it for persistence
-
+            localStorage.setItem('guestTableNumber', parsedTable);
+            // Optionally, clear name/mobile if starting fresh from QR (or prompt later)
+            // localStorage.removeItem('customerName');
+            // localStorage.removeItem('customerMobile');
+            
              // If a table is specified in the URL, log in as a guest automatically
             await loginAsGuest();
         }
@@ -131,7 +137,11 @@ const initializeApp = async () => {
             guestApp.guestTableNumber = null; // Ensure it's null if not found
         }
     }
-    
+
+    // Load existing customer info from localStorage if available
+    guestApp.customerName = localStorage.getItem('customerName') || null;
+    guestApp.customerMobile = localStorage.getItem('customerMobile') || null;
+
     // Normal authentication flow
     console.log('Starting normal auth flow...');
     const authPromise = initAuth();
@@ -148,9 +158,9 @@ const initializeApp = async () => {
         const role = getCurrentRole();
         console.log('User logged in with role:', role);
 
-        if (role === 'guest-anonymous' && !guestApp.guestTableNumber) {
-            // If logged in as guest but no table number, show table entry screen
-             showGuestTableEntryScreen();
+        if (role === 'guest-anonymous') {
+            // Guest role will now handle its own prompts for table/customer info
+            showSection(role);
         } else {
             showSection(role);
         }
@@ -176,8 +186,8 @@ loginForm.addEventListener('submit', async (event) => {
 roleGuestBtn.addEventListener('click', async () => {
     const result = await loginAsGuest();
     if (result.success) {
-        // After successful anonymous login, show the table entry screen.
-        showGuestTableEntryScreen();
+        // After successful anonymous login, guestApp will decide whether to prompt for info or show menu
+        showSection('guest-anonymous');
     } else {
         NotificationService.show(`Giriş xətası: ${result.error}`, 'error');
     }
@@ -194,7 +204,7 @@ if (guestTableForm) {
         if (tableNumber > 0) {
             guestApp.guestTableNumber = tableNumber;
             localStorage.setItem('guestTableNumber', tableNumber); // Persist table number
-            showSection('guest-anonymous'); // Now render the actual guest menu
+            showSection('guest-anonymous'); // Now render the actual guest menu, guestApp will prompt for name/mobile if needed
         } else {
             NotificationService.show('Zəhmət olmasa düzgün masa nömrəsi daxil edin.', 'error');
         }
@@ -220,9 +230,16 @@ staffLoginBtn.addEventListener('click', () => {
 // This function is now defined and exported from admin.js, no need to duplicate it here.
 
 logoutBtn.addEventListener('click', async () => {
-    // Clear guest table number from local storage on logout
+    // Clear guest specific info from local storage on logout
     localStorage.removeItem('guestTableNumber');
+    localStorage.removeItem('customerName');
+    localStorage.removeItem('customerMobile');
+
     guestApp.guestTableNumber = null; // Reset internal state
+    guestApp.customerName = null;
+    guestApp.customerMobile = null;
+    guestApp.lastKnownOrderStatuses = {}; // Clear tracked order statuses for next session
+
     if (guestApp.orderListenerUnsubscribe) {
         guestApp.orderListenerUnsubscribe();
     }

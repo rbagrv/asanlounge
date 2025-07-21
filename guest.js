@@ -8,6 +8,8 @@ import { StatusUtils } from './utils/statusUtils.js';
 export class GuestModule {
   constructor() {
     this.guestTableNumber = null; // This will now be set by app.js
+    this.customerName = null;     // New: Customer name
+    this.customerMobile = null;   // New: Customer mobile number
     this.allProducts = [];
     this.allCategories = [];
     this.currentCategory = 'all';
@@ -18,6 +20,11 @@ export class GuestModule {
     this.isInitialized = false; // Add initialization flag
     this.userId = null;
     this.orderListenerUnsubscribe = null;
+    this.lastKnownOrderStatuses = {}; // New: To track status changes for notifications
+
+    // Audio properties
+    this.audioContext = null;
+    this.guestSoundBuffer = null;
   }
 
   async initialize() {
@@ -34,9 +41,17 @@ export class GuestModule {
         this.allCategories = categories;
         this.allProducts = products;
         this.userId = getCurrentUser()?.uid;
+        
+        // Load customer info and table number from local storage
+        this.guestTableNumber = parseInt(localStorage.getItem('guestTableNumber')) || null;
+        this.customerName = localStorage.getItem('customerName') || null;
+        this.customerMobile = localStorage.getItem('customerMobile') || null;
+
         if(this.userId) {
             this.startOrderTracking();
         }
+
+        this.initGuestAudio(); // Initialize audio
 
         console.log('Categories loaded:', this.allCategories.length);
         console.log('Products loaded:', this.allProducts.length);
@@ -50,6 +65,63 @@ export class GuestModule {
     } finally {
         NotificationService.hideLoading(this.loadingElement);
     }
+  }
+
+  // New audio initialization for guest notifications
+  async initGuestAudio() {
+    try {
+        // Create AudioContext after a user interaction to comply with browser policies
+        document.body.addEventListener('click', async () => {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (this.audioContext.state === 'suspended') {
+                await this.audioContext.resume();
+            }
+            // Decode audio data only once and after context is ready
+            if (!this.guestSoundBuffer) {
+                const response = await fetch('new_order_alert.mp3');
+                const arrayBuffer = await response.arrayBuffer();
+                this.guestSoundBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+            }
+        }, { once: true });
+
+        // If audio context exists and isn't suspended, pre-decode the audio
+        if (this.audioContext && this.audioContext.state !== 'suspended' && !this.guestSoundBuffer) {
+            const response = await fetch('new_order_alert.mp3');
+            const arrayBuffer = await response.arrayBuffer();
+            this.guestSoundBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+        }
+    } catch (error) {
+        console.warn('Could not initialize audio for guest notifications.', error);
+    }
+  }
+
+  // New function to play notification sound
+  playGuestNotificationSound() {
+      if (!this.audioContext || !this.guestSoundBuffer) {
+          console.warn('Guest audio not ready to play or not decoded.');
+          // Attempt to resume audio context if suspended, for later playback
+          if (this.audioContext && this.audioContext.state === 'suspended') {
+              this.audioContext.resume().then(() => {
+                  console.log('Guest AudioContext resumed after user interaction.');
+              }).catch(e => console.error('Failed to resume Guest AudioContext:', e));
+          }
+          return;
+      }
+      if (this.audioContext.state === 'suspended') {
+          this.audioContext.resume().then(() => {
+              const source = this.audioContext.createBufferSource();
+              source.buffer = this.guestSoundBuffer;
+              source.connect(this.audioContext.destination);
+              source.start(0);
+          }).catch(e => console.error('Failed to resume Guest AudioContext for playback:', e));
+      } else {
+          const source = this.audioContext.createBufferSource();
+          source.buffer = this.guestSoundBuffer;
+          source.connect(this.audioContext.destination);
+          source.start(0);
+      }
   }
 
   async render(container) {
@@ -102,7 +174,7 @@ export class GuestModule {
 
   renderTableInfo() {
     // this.guestTableNumber is now expected to be set by app.js before render
-    if (this.guestTableNumber) {
+    if (this.guestTableNumber && this.customerName && this.customerMobile) {
       return `
         <div class="text-center mb-8 sm:mb-12">
           <div class="inline-flex items-center justify-center space-x-4 mb-6">
@@ -112,8 +184,8 @@ export class GuestModule {
               </svg>
             </div>
             <div class="text-left">
-              <h1 class="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Masa ${this.guestTableNumber}</h1>
-              <p class="text-lg sm:text-xl text-slate-600">Xoş gəlmisiniz!</p>
+              <h1 class="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Xoş Gəlmisiniz, ${this.customerName}!</h1>
+              <p class="text-lg sm:text-xl text-slate-600">Masa ${this.guestTableNumber} Sifarişinizi gözləyir.</p>
             </div>
           </div>
           
@@ -128,7 +200,7 @@ export class GuestModule {
         </div>
       `;
     }
-    // New simplified message for when no table is set yet.
+    // New simplified message for when no table/customer info is set yet.
     return `
       <div class="text-center mb-8 sm:mb-12">
           <h1 class="text-3xl sm:text-5xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Menyu</h1>
@@ -579,33 +651,34 @@ export class GuestModule {
     const placeOrderBtn = document.querySelector('#place-order-btn');
     if (!placeOrderBtn) return;
     
-    // Button is enabled if cart has items. Table number check is moved to placeOrder().
+    // Button is enabled if cart has items. Table number and customer info check is moved to placeOrder().
     const isValid = guestCartService.getItems().length > 0;
     
     placeOrderBtn.disabled = !isValid;
-    // Update button text based on whether table number is known
-    placeOrderBtn.textContent = this.guestTableNumber 
+    // Update button text based on whether all required info is known
+    const allInfoKnown = this.guestTableNumber && this.customerName && this.customerMobile;
+    placeOrderBtn.textContent = allInfoKnown
         ? 'Sifarişi Tamamla' 
-        : 'Masa Nömrəsini Daxil Et';
+        : 'Məlumatları Daxil Et';
   }
 
   async placeOrder() {
-    // If table number is not set, prompt for it.
-    if (!this.guestTableNumber) {
-      this.promptForTableNumber();
-      return;
+    // If table number, name, or mobile is not set, prompt for them.
+    if (!this.guestTableNumber || !this.customerName || !this.customerMobile) {
+      await this.promptForOrderDetails();
+      // If after prompting, info is still missing, stop.
+      if (!this.guestTableNumber || !this.customerName || !this.customerMobile) {
+        NotificationService.show('Sifarişi tamamlamaq üçün bütün məlumatlar tələb olunur.', 'error');
+        return;
+      }
     }
 
     const finalTableNumber = this.guestTableNumber;
+    const finalCustomerName = this.customerName;
+    const finalCustomerMobile = this.customerMobile;
     
     if (guestCartService.getItems().length === 0) {
       NotificationService.show('Zəhmət olmasa sifarişə məhsul əlavə edin.', 'error');
-      return;
-    }
-
-    if (!finalTableNumber || finalTableNumber <= 0) {
-      // This should ideally not happen if app.js ensures table number is set
-      NotificationService.show('Zəhmət olmasa masa nömrəsi təyin olunduğundan əmin olun.', 'error');
       return;
     }
 
@@ -628,8 +701,13 @@ export class GuestModule {
           throw new Error("İstifadəçi təyin olunmayıb. Zəhmət olmasa yenidən daxil olun.");
       }
 
+      // Save/update guest profile before placing the order
+      await DataService.saveGuestProfile(this.userId, finalCustomerName, finalCustomerMobile);
+
       const newOrder = {
         tableNumber: finalTableNumber,
+        customerName: finalCustomerName,      // New: Include customer name
+        customerMobile: finalCustomerMobile,  // New: Include customer mobile
         items: guestCartService.getItems().map(item => ({
           id: item.id,
           name: item.name,
@@ -647,16 +725,13 @@ export class GuestModule {
       
       if (result) {
         guestCartService.clear();
-        this.startOrderTracking();
-        
-        // Clear local storage only after successful order and if not from QR initial load
-        // If it was from QR, it might be a multi-order session
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('table')) { // Only clear if not initially loaded via QR
-            localStorage.removeItem('guestTableNumber');
-            this.guestTableNumber = null; // Clear local state as well
-        }
-        
+        this.startOrderTracking(); // Re-start tracking to pick up the new order
+
+        // Persist customer info for anonymous user
+        localStorage.setItem('guestTableNumber', finalTableNumber);
+        localStorage.setItem('customerName', finalCustomerName);
+        localStorage.setItem('customerMobile', finalCustomerMobile);
+
         NotificationService.show(
           `🎉 Sifarişiniz uğurla qəbul edildi! Masa ${finalTableNumber} üçün hazırlığa başlandı. Təşəkkür edirik!`, 
           'success', 
@@ -683,87 +758,111 @@ export class GuestModule {
       NotificationService.show(`🔌 Sifariş zamanı xəta: ${error.message}`, 'error');
     } finally {
       placeOrderBtn.disabled = false;
-      placeOrderBtn.innerHTML = this.guestTableNumber ? 'Sifarişi Tamamla' : 'Masa Nömrəsini Daxil Et';
-      this.updatePlaceOrderButtonState();
+      this.updatePlaceOrderButtonState(); // Update button text based on new state
     }
   }
 
-  promptForTableNumber() {
-    // Remove any existing modals first
-    const existingModal = document.querySelector('.table-prompt-modal');
-    if (existingModal) {
-      document.body.removeChild(existingModal);
-    }
+  // New combined prompt for table number and customer info
+  async promptForOrderDetails() {
+    return new Promise((resolve) => {
+        const existingModal = document.querySelector('.order-details-prompt-modal');
+        if (existingModal) {
+            document.body.removeChild(existingModal);
+        }
 
-    const modal = createElement('div', {
-        className: 'table-prompt-modal fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4'
-    });
+        const modal = createElement('div', {
+            className: 'order-details-prompt-modal fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4'
+        });
 
-    modal.innerHTML = `
-        <div class="ultra-modern-card p-6 sm:p-8 w-full max-w-md animate-scale-in">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6.5-5l2.5 5"></path>
-                      </svg>
-                    </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">Masa Nömrəsi</h2>
-                <p class="text-slate-600">Sifarişinizi tamamlamaq üçün masa nömrənizi daxil edin.</p>
-            </div>
-            
-            <form id="table-prompt-form" class="space-y-4">
-                <div>
-                    <label for="modalTableNumberInput" class="sr-only">Masa Nömrəsi</label>
-                    <input type="number" id="modalTableNumberInput" name="tableNumber" min="1" required 
-                           class="ultra-modern-input w-full px-4 py-3 rounded-xl text-center text-2xl font-bold"
-                           placeholder="Məs. 12">
+        modal.innerHTML = `
+            <div class="ultra-modern-card p-6 sm:p-8 w-full max-w-md animate-scale-in">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.255-1.274.71-1.743m5-5a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                          </svg>
+                        </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Sifariş Detalları</h2>
+                    <p class="text-slate-600">Sifarişinizi tamamlamaq üçün məlumatları daxil edin.</p>
                 </div>
                 
-                <div class="flex space-x-3 pt-4">
-                    <button type="button" id="cancel-table-prompt" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
-                        Sonra
-                    </button>
-                    <button type="submit" class="flex-1 premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
-                        Təsdiq Et və Sifariş Ver
-                    </button>
-                </div>
-            </form>
-        </div>
-    `;
+                <form id="order-details-form" class="space-y-4">
+                    <div>
+                        <label for="modalCustomerNameInput" class="block text-sm font-semibold text-slate-700 mb-2">Adınız</label>
+                        <input type="text" id="modalCustomerNameInput" name="customerName" value="${this.customerName || ''}" required 
+                               class="ultra-modern-input w-full px-4 py-3 rounded-xl text-base"
+                               placeholder="Adınız Soyadınız">
+                    </div>
+                    <div>
+                        <label for="modalCustomerMobileInput" class="block text-sm font-semibold text-slate-700 mb-2">Mobil Nömrə</label>
+                        <input type="tel" id="modalCustomerMobileInput" name="customerMobile" value="${this.customerMobile || ''}" required 
+                               class="ultra-modern-input w-full px-4 py-3 rounded-xl text-base"
+                               placeholder="Məs. +994 50 123 45 67">
+                    </div>
+                    <div>
+                        <label for="modalTableNumberInput" class="block text-sm font-semibold text-slate-700 mb-2">Masa Nömrəsi</label>
+                        <input type="number" id="modalTableNumberInput" name="tableNumber" min="1" value="${this.guestTableNumber || ''}" required 
+                               class="ultra-modern-input w-full px-4 py-3 rounded-xl text-center text-2xl font-bold"
+                               placeholder="Məs. 12">
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" id="cancel-order-details-prompt" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+                            Ləğv et
+                        </button>
+                        <button type="submit" class="flex-1 premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105">
+                            Təsdiq Et və Sifariş Ver
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
 
-    document.body.appendChild(modal);
-    modal.querySelector('#modalTableNumberInput').focus();
+        document.body.appendChild(modal);
+        modal.querySelector('#modalCustomerNameInput').focus();
 
-    const closeModal = () => {
-        if (modal.parentNode) {
-            document.body.removeChild(modal);
-        }
-    };
-    
-    modal.querySelector('#cancel-table-prompt').addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
+        const closeModal = (resolved = false) => {
+            if (modal.parentNode) {
+                document.body.removeChild(modal);
+            }
+            resolve(resolved); // Resolve the promise
+        };
+        
+        modal.querySelector('#cancel-order-details-prompt').addEventListener('click', () => closeModal(false));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(false);
+            }
+        });
 
-    modal.querySelector('#table-prompt-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const tableNumberInput = modal.querySelector('#modalTableNumberInput');
-        const tableNumber = parseInt(tableNumberInput.value, 10);
+        modal.querySelector('#order-details-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = modal.querySelector('#modalCustomerNameInput');
+            const mobileInput = modal.querySelector('#modalCustomerMobileInput');
+            const tableNumberInput = modal.querySelector('#modalTableNumberInput');
 
-        if (tableNumber > 0) {
-            this.guestTableNumber = tableNumber;
-            localStorage.setItem('guestTableNumber', tableNumber);
-            closeModal();
-            // Re-render table info and place the order
-            this.renderLayout(document.querySelector('#guest-content-wrapper'));
-            this.setupEventListeners(document.querySelector('#guest-section'));
-            this.placeOrder();
-        } else {
-            NotificationService.show('Zəhmət olmasa düzgün masa nömrəsi daxil edin.', 'error');
-            tableNumberInput.focus();
-        }
+            const name = nameInput.value.trim();
+            const mobile = mobileInput.value.trim();
+            const tableNumber = parseInt(tableNumberInput.value, 10);
+
+            if (name && mobile && tableNumber > 0) {
+                this.customerName = name;
+                this.customerMobile = mobile;
+                this.guestTableNumber = tableNumber;
+                
+                localStorage.setItem('customerName', name);
+                localStorage.setItem('customerMobile', mobile);
+                localStorage.setItem('guestTableNumber', tableNumber);
+                
+                // Re-render table info to show updated details
+                this.renderLayout(document.querySelector('#guest-content-wrapper'));
+                this.setupEventListeners(document.querySelector('#guest-section'));
+
+                closeModal(true); // Resolve with true indicating success
+            } else {
+                NotificationService.show('Zəhmət olmasa bütün məlumatları düzgün daxil edin.', 'error');
+            }
+        });
     });
   }
 
@@ -800,6 +899,7 @@ export class GuestModule {
 
     if (!this.userId) return;
 
+    // Listen only to orders from this specific anonymous user
     this.orderListenerUnsubscribe = DataService.getOrdersForUser(this.userId, (orders) => {
         this.handleOrderUpdates(orders);
     });
@@ -820,6 +920,20 @@ export class GuestModule {
           badge.classList.add('hidden');
       }
       
+      // Check for status changes and play sound
+      activeOrders.forEach(order => {
+          const previousStatus = this.lastKnownOrderStatuses[order.id];
+          if (previousStatus && previousStatus !== order.status) {
+              // Play sound only for specific status transitions important to guest
+              if (order.status === 'in-prep' || order.status === 'ready' || order.status === 'served') {
+                  this.playGuestNotificationSound();
+                  NotificationService.show(`Sifarişiniz yeniləndi: Masa ${order.tableNumber} - ${StatusUtils.getStatusText(order.status)}`, 'info', 5000);
+              }
+          }
+          // Update last known status
+          this.lastKnownOrderStatuses[order.id] = order.status;
+      });
+
       // If modal is open, update it
       const modal = document.querySelector('.order-status-modal');
       if (modal) {
@@ -861,6 +975,8 @@ export class GuestModule {
               closeModal();
           }
       });
+      // Immediately render content
+      this.renderOrderStatusModalContent(modal.querySelector('.modal-content-area'), Object.values(this.lastKnownOrderStatuses).filter(o => !['paid', 'cancelled'].includes(o.status)));
   }
 
   renderOrderStatusModalContent(container, orders) {
@@ -873,7 +989,13 @@ export class GuestModule {
           return;
       }
 
-      container.innerHTML = orders.map(order => this.createOrderStatusTimeline(order)).join('');
+      // Re-fetch full order objects from this.lastKnownOrderStatuses to ensure all data is present
+      const ordersToDisplay = orders.map(activeOrder => {
+          const storedOrder = Object.entries(this.lastKnownOrderStatuses).find(([id, status]) => id === activeOrder.id);
+          return storedOrder ? activeOrder : null; // Use the full order object that was tracked
+      }).filter(Boolean);
+
+      container.innerHTML = ordersToDisplay.map(order => this.createOrderStatusTimeline(order)).join('');
   }
   
   createOrderStatusTimeline(order) {
@@ -884,23 +1006,46 @@ export class GuestModule {
         { key: 'served', text: 'Təqdim edildi' }
     ];
     
+    // Find the current status in the predefined sequence
     const currentStatusIndex = statuses.findIndex(s => s.key === order.status);
+
+    let customerInfoHTML = '';
+    // Display customer info if available in the order object
+    if (order.customerName || order.customerMobile) {
+        customerInfoHTML = `<p class="text-sm text-slate-600 mb-4">Müştəri: ${order.customerName || 'N/A'} | ${order.customerMobile || 'N/A'}</p>`;
+    }
 
     const timelineItems = statuses.map((status, index) => {
         const isCompleted = index < currentStatusIndex;
         const isActive = index === currentStatusIndex;
-        const isFuture = index > currentStatusIndex;
+        // isFuture is implicit: index > currentStatusIndex
 
-        let statusClass = 'timeline-item';
-        if (isCompleted) statusClass += ' completed';
-        if (isActive) statusClass += ' active';
+        let dotClass = '';
+        let contentClass = '';
+        let textClass = 'text-slate-500';
+
+        if (isActive) {
+            dotClass = 'bg-primary-500 border-primary-500 animate-pulse-slow'; // Pulsing for active
+            contentClass = 'font-bold text-slate-800';
+            textClass = 'text-primary-600';
+        } else if (isCompleted) {
+            dotClass = 'bg-green-500 border-green-500'; // Green for completed
+            contentClass = 'text-slate-600';
+        } else {
+            dotClass = 'bg-slate-300 border-slate-300'; // Grey for future
+            contentClass = 'text-slate-500';
+        }
 
         return `
-            <div class="${statusClass}">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <h4 class="font-semibold text-slate-800">${status.text}</h4>
-                    <p class="text-xs text-slate-500">${isActive ? 'Hazırki status' : isCompleted ? 'Tamamlandı' : 'Gözlənilir'}</p>
+            <div class="relative flex items-start timeline-item mb-8 last:mb-0">
+                <div class="flex-shrink-0 flex flex-col items-center mr-4">
+                    <div class="w-4 h-4 rounded-full border-2 ${dotClass}"></div>
+                    ${index < statuses.length - 1 ? `<div class="w-0.5 h-12 ${isCompleted ? 'bg-green-500' : 'bg-slate-300'}"></div>` : ''}
+                </div>
+                <div class="flex-1 timeline-content -mt-1">
+                    <h4 class="text-base ${contentClass}">${status.text}</h4>
+                    <p class="text-xs ${textClass}">${isActive ? 'Hazırki status' : isCompleted ? 'Tamamlandı' : 'Gözlənilir'}</p>
+                    ${order.status === status.key && order.createdAt ? `<p class="text-xs text-slate-400 mt-1">${new Date(order.createdAt.seconds * 1000).toLocaleString()}</p>` : ''}
                 </div>
             </div>
         `;
@@ -909,6 +1054,7 @@ export class GuestModule {
     return `
       <div class="ultra-modern-card p-5 mb-6">
           <h3 class="text-lg font-bold text-slate-800 mb-4">Sifariş #${order.id.substring(0, 6)} (Masa ${order.tableNumber})</h3>
+          ${customerInfoHTML}
           <div class="timeline">
               ${timelineItems}
           </div>
