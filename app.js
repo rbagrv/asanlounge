@@ -4,6 +4,9 @@ import { renderWaiterSection } from './waiter.js';
 import { renderAdminSection, showAdminLoginPrompt } from './admin.js';
 import { NotificationService } from './utils/notificationService.js';
 import { DataService } from './services/dataService.js';
+import { getOfflineOrdersCount } from './utils/offlineDB.js'; // Import to check offline queue size
+
+let offlineMode = !navigator.onLine; // Initial state
 
 const splashScreen = document.getElementById('splash-screen');
 const appContent = document.getElementById('app-content');
@@ -22,6 +25,10 @@ const profileBtn = document.getElementById('profile-btn');
 const profileDropdown = document.getElementById('profile-dropdown');
 const logoutIconBtn = document.getElementById('logout-icon-btn');
 const guestNotificationsBtn = document.getElementById('guest-notifications-btn');
+const offlineIndicator = document.getElementById('offline-indicator'); // New element
+const pendingOrdersBadge = document.getElementById('pending-orders-badge'); // New element
+
+export { offlineMode }; // Export offlineMode for other modules
 
 const sections = {
     'guest': document.getElementById('guest-section'),
@@ -29,7 +36,7 @@ const sections = {
     'waiter': document.getElementById('waiter-section'),
     'admin': document.getElementById('admin-section'),
     'manager': document.getElementById('admin-section'),
-    'cashier': document.getElementById('admin-section'),
+    'cashier': document.getElementById('admin-section'), // Ensure cashier maps to admin section
     'guest-table-entry': guestTableEntrySection, // New section
 };
 
@@ -97,6 +104,44 @@ const showGuestTableEntryScreen = () => {
     staffLoginBtn.classList.add('hidden');
 };
 
+// Function to update the offline indicator UI
+const updateOfflineIndicator = async () => {
+    if (offlineIndicator) {
+        if (offlineMode) {
+            offlineIndicator.classList.remove('hidden', 'online');
+            offlineIndicator.classList.add('bg-red-100', 'text-red-800');
+            // Check for pending orders in IndexedDB
+            const pendingCount = await getOfflineOrdersCount();
+            if (pendingCount > 0) {
+                pendingOrdersBadge.textContent = `(${pendingCount})`;
+                pendingOrdersBadge.classList.remove('hidden');
+                // Only show notification if not already shown recently to avoid spam
+                if (!offlineIndicator.dataset.notified || (Date.now() - offlineIndicator.dataset.notified > 10000)) {
+                    NotificationService.show(`Offline rejimdəsiniz. ${pendingCount} sifariş sinxronizasiyanı gözləyir.`, 'warning', 5000);
+                    offlineIndicator.dataset.notified = Date.now();
+                }
+            } else {
+                pendingOrdersBadge.classList.add('hidden');
+                // No notification if count is 0, as it implies all synced or nothing was pending
+            }
+        } else {
+            offlineIndicator.classList.add('hidden');
+            // Check if there were any pending orders that just synced
+            const lastPendingCount = await getOfflineOrdersCount();
+            if (lastPendingCount === 0 && offlineIndicator.dataset.notified) {
+                // If it was hidden before and now zero, means it just synced
+                NotificationService.show('İnternet bərpa olundu. Bütün offline sifarişlər sinxronizasiya edildi.', 'success', 5000);
+                delete offlineIndicator.dataset.notified; // Reset notification flag
+            } else if (lastPendingCount > 0) {
+                 NotificationService.show(`İnternet bərpa olundu. ${lastPendingCount} sifariş sinxronizasiyanı gözləyir.`, 'warning', 5000);
+            } else {
+                NotificationService.show('İnternet bərpa olundu.', 'info', 3000);
+            }
+            pendingOrdersBadge.classList.add('hidden');
+        }
+    }
+};
+
 const initializeApp = async () => {
     // Show splash screen immediately
     if (splashScreen) {
@@ -141,6 +186,20 @@ const initializeApp = async () => {
     // Load existing customer info from localStorage if available
     guestApp.customerName = localStorage.getItem('customerName') || null;
     guestApp.customerMobile = localStorage.getItem('customerMobile') || null;
+
+    // Set up online/offline event listeners
+    window.addEventListener('online', async () => {
+        offlineMode = false;
+        await updateOfflineIndicator();
+        await DataService.syncOrdersQueue(); // Attempt to sync pending orders
+    });
+    window.addEventListener('offline', async () => {
+        offlineMode = true;
+        await updateOfflineIndicator();
+    });
+
+    // Initial check and update for offline indicator
+    await updateOfflineIndicator();
 
     // Normal authentication flow
     console.log('Starting normal auth flow...');
@@ -301,7 +360,7 @@ document.getElementById('info-btn').addEventListener('click', async () => {
     modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4';
     
     modal.innerHTML = `
-        <div class="ultra-modern-card p-6 sm:p-8 w-full max-w-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
+        <div class="ultra-modern-card p-0 w-full max-w-2xl animate-scale-in max-h-[90vh] overflow-y-auto">
             <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
         </div>
     `;

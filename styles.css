@@ -1034,36 +1034,27 @@ body {
     cursor: not-allowed;
 }
 
-/* Specific button styles for POS actions (reusing existing where possible) */
-.mark-as-paid-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%); /* Emerald to green */
-    position: relative;
-    overflow: hidden;
+.pos-payment-type-btn {
+    transition: all 0.2s ease-in-out;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    background-color: #e2e8f0; /* slate-200 */
+    color: #334155; /* slate-700 */
     border: none;
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
 }
 
-.mark-as-paid-btn:hover {
-    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 16px 40px rgba(16, 185, 129, 0.4);
+.pos-payment-type-btn:hover {
+    background-color: #cbd5e1; /* slate-300 */
 }
 
-.mark-as-paid-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    transition: left 0.6s;
-}
-
-.mark-as-paid-btn:hover::before {
-    left: 100%;
+.pos-payment-type-btn.active {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); /* primary-500 to primary-600 */
+    color: white;
+    box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+    transform: scale(1.05);
 }
 
 .pos-cart-item .cart-quantity-btn {
@@ -1177,7 +1168,7 @@ body {
     }
 }
 
-/* Settings tabs styling */
+/* Enhanced tab styles */
 .settings-tab {
     display: flex;
     align-items: center;
@@ -1216,30 +1207,29 @@ body {
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Social icons for info modal */
-.social-icon-btn {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
+/* Offline indicator styles */
+.offline-indicator {
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
+    background-color: #fee2e2; /* red-100 */
+    color: #ef4444; /* red-500 */
+    padding: 0.25rem 0.75rem; /* px-3 py-1 */
+    border-radius: 9999px; /* rounded-full */
+    font-size: 0.75rem; /* text-xs */
+    font-weight: 600; /* font-semibold */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.social-icon-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+.offline-indicator.online {
+    background-color: #d1fae5; /* green-100 */
+    color: #10b981; /* green-500 */
 }
 
-.instagram-bg {
-    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
-}
-
-.facebook-bg {
-    background: #1877f2;
-}
-
-.tiktok-bg {
-    background: linear-gradient(45deg, #ff0050, #000000);
+.offline-indicator .badge {
+    background-color: #dc2626; /* red-600 */
+    color: white;
+    padding: 0.1rem 0.4rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    margin-left: 0.25rem;
 }

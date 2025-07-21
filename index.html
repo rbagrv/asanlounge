@@ -3,7 +3,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eat & drink app</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS should be precompiled and included locally for offline support -->
     <script>
         tailwind.config = {
             theme: {
@@ -53,12 +53,13 @@
                 "firebase/app": "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js",
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js",
                 "firebase/auth": "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js",
-                "firebase/functions": "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
+                "firebase/functions": "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js",
+                "idb": "./libs/idb.js"
             }
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="./libs/chart.js"></script>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -75,6 +76,10 @@
             <div class="flex items-center justify-between h-14">
                 <div class="flex items-center">
                     <img src="/appicon.png" alt="Logo" class="app-logo h-10 w-auto">
+                    <!-- New offline indicator -->
+                    <div id="offline-indicator" class="ml-4 px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800 hidden">
+                        Offline <span id="pending-orders-badge" class="ml-1 hidden"></span>
+                    </div>
                 </div>
                 <div class="flex items-center">
                     <nav id="main-nav" class="flex items-center space-x-2 sm:space-x-4">
@@ -127,7 +132,7 @@
                                         <span>Profil Tənzimləmələri</span>
                                     </a>
                                     <a href="#" id="logout-link" class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                        <svg class="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 01-5.356-1.857M17 20H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.255-1.274.71-1.743m5-5a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                        <svg class="w-5 h-5 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 01-5.356-1.857M17 20H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 20H2v-2a3 3 0 000-6h14a3 3 0 000 6H7z"></path>
                                 </svg>
                                 <span>Çıxış</span>
                             </a>

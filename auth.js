@@ -14,3 +14,7 @@ export const isAdmin = AuthService.isAdmin.bind(AuthService);
 export const isManager = AuthService.isManager.bind(AuthService);
 export const isCashier = AuthService.isCashier.bind(AuthService);
 export const requireAdmin = AuthService.requireAdmin.bind(AuthService);
+
+// Export the AuthService class itself for direct import
+export { AuthService };
+

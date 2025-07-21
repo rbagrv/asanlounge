@@ -134,7 +134,20 @@ const renderWaiterSection = (container) => {
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+                <!-- QR Code Orders -->
+                <div class="ultra-modern-card p-4 sm:p-6">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"></path>
+                        </svg>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-700">QR Sifarişlər</h3>
+                    </div>
+                    <div id="qr-orders" class="space-y-3 sm:space-y-4">
+                        <!-- QR-origin orders will be rendered here -->
+                    </div>
+                </div>
+                
                 <div class="ultra-modern-card p-4 sm:p-6">
                     <div class="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
                         <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center">
@@ -209,6 +222,19 @@ const renderWaiterSection = (container) => {
         const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
                                     .filter(order => order && ['pending', 'in-prep', 'ready'].includes(order.status));
         
+        // Render QR-origin orders
+        const qrOrdersContainer = container.querySelector('#qr-orders');
+        if (qrOrdersContainer) {
+            const qrList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                                .filter(o => ['pending', 'in-prep', 'ready'].includes(o.status) && o.orderSource === 'qr-code');
+            qrOrdersContainer.innerHTML = '';
+            if (qrList.length > 0) {
+                qrList.forEach(o => qrOrdersContainer.appendChild(createKitchenOrderCard(o)));
+            } else {
+                qrOrdersContainer.innerHTML = '<p class="text-center text-slate-500 py-4">Heç bir QR sifariş yoxdur</p>';
+            }
+        }
+
         // Clear containers
         pendingOrders.innerHTML = '';
         inprepOrders.innerHTML = '';
@@ -310,10 +336,13 @@ const renderWaiterSection = (container) => {
                 });
                 
                 // Show success notification
-                const statusText = newStatus === 'in-prep' ? 'Hazırlamaya başlandı' : 
-                                  newStatus === 'ready' ? 'Hazırdır' : 'Status yeniləndi';
-                                  
-                NotificationService.show(`Masa ${orderCard.dataset.tableNumber}: ${statusText}`, 'success');
+                const statusTextMap = {
+                    'in-prep': 'Hazırlamağa başlandı',
+                    'ready': 'Hazırdır',
+                    'served': 'Servis edildi'
+                };
+                const displayStatusText = statusTextMap[newStatus] || 'Status yeniləndi';
+                NotificationService.show(`Masa ${orderCard.dataset.tableNumber}: ${displayStatusText}`, 'success');
                 
             } catch (error) {
                 console.error("Error updating order status:", error);
