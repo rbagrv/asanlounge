@@ -1,4 +1,4 @@
-import { auth } from '../firebase-config.js';
+import { auth, db } from '../firebase-config.js';
 import { 
   signInWithEmailAndPassword, 
   signOut, 
@@ -6,6 +6,7 @@ import {
   createUserWithEmailAndPassword 
 } from 'firebase/auth';
 import { signInGuestAnonymously } from '../firebase-config.js';
+import { doc, setDoc } from 'firebase/firestore';
 
 let currentUser = null;
 let currentUserRole = null;
@@ -99,11 +100,23 @@ export class AuthService {
   static async registerUser(email, password, role) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      userRoles[email] = role;
+      // Add user to the 'users' collection in Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+          email: email,
+          role: role,
+          createdAt: new Date()
+      });
+      userRoles[email] = role; // Keep this for local consistency if needed
       return { success: true, user: userCredential.user };
     } catch (error) {
       console.error("Registration error:", error);
-      return { success: false, error: error.message };
+      let errorMessage = "Qeydiyyat zamanı xəta baş verdi.";
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "Bu email artıq istifadə olunur.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Şifrə ən az 6 simvoldan ibarət olmalıdır.";
+      }
+      return { success: false, error: errorMessage };
     }
   }
 

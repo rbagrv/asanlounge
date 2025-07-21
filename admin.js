@@ -1,10 +1,12 @@
-import { createElement, createAnalyticsCard, createProductCard, createAdminProductForm, createOrderCard, createTableCard, createTableForm, createDiscountForm, createInventoryItemForm, createPurchaseForm, createEmployeeForm, createCategoryForm, createRecipeForm, createSupplierForm, createPOSOrderListItem, createUserCard, createSalesTableRow } from './components.js';
+import { createElement, createAnalyticsCard, createProductCard, createAdminProductForm, createOrderCard, createTableCard, createTableForm, createDiscountForm, createInventoryItemForm, createPurchaseForm, createEmployeeForm, createCategoryForm, createRecipeForm, createSupplierForm, createPOSOrderListItem, createUserCard, createSalesTableRow, createPOSProductCard, createPOSCartItem, createProductRow } from './components.js';
 import { DataService } from './services/dataService.js';
 import { NotificationService } from './utils/notificationService.js';
 import { CartService } from './utils/cartService.js';
 import { StatusUtils } from './utils/statusUtils.js';
-import { getCurrentRole, loginAdmin, getCurrentUser } from './auth.js';
+import { getCurrentRole, loginAdmin, getCurrentUser, logout } from './auth.js';
 import { renderWaiterSection } from './waiter.js';
+import { db } from './firebase-config.js';
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, getDoc } from 'firebase/firestore';
 
 // Global variables for admin functionality
 let currentAdminTab = 'dashboard';
@@ -14,28 +16,30 @@ let adminCartService = new CartService();
 let posProducts = [];
 let posCategories = [];
 let posCurrentTableNumber = null;
-let posCurrentSelectedOrderId = null;
+let posCurrentSelectedOrderId = null; // To store fetched active orders
 let posActiveOrders = []; // To store fetched active orders
+let posOrdersUnsubscribe = null; // Listener for real-time POS orders
+
 let currentTabCleanup = null; // To store the cleanup function for the active tab
 
 // --- Menu Configuration ---
 const MENU_ITEMS = {
-    dashboard: { text: 'Göstərici Lövhə', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
-    pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
-    kitchen: { text: 'Mətbəx', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>` },
+    dashboard: { text: 'Göstərici Lövhə', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 00-2-2v-6a2 2 0 002-2H9a2 2 0 002 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
+    pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 00-2-2v-6a2 2 0 002-2H9a2 2 0 002 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
+    kitchen: { text: 'Mətbəx', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 01-1.806.547M8 4h8l-1 1v5.172a2 2 0 01-5.356-1.857M8 4h2m0 0l-2.5 5M8 4l2.5 5m6.5-5l2.5 5"></path></svg>` },
     orders: { text: 'Sifarişlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-6-4v10m6-10v10m6-10v10M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
-    sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1m8-10a3 3 0 01-3-3V7a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>` },
+    sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
     products: { text: 'Məhsullar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>` },
-    customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 12a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
-    categories: { text: 'Kateqoriyalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 015.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
+    customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 21H2v-2a3 3 0 015.356-1.857M7 21v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
+    categories: { text: 'Kateqoriyalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
     tables: { text: 'Masalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21v-3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
     inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7l8 4-8 4m16-4l-8 4"></path></svg>` },
     employees: { text: 'İşçilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
     purchases: { text: 'Alışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6.5-5l2.5 5"></path></svg>` },
-    discounts: { text: 'Endirimlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>` },
-    recipes: { text: 'Reseptlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
+    discounts: { text: 'Endirimlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
+    recipes: { text: 'Reseptlər', icon: `<img src="/chef-hat.png" class="w-5 h-5">` },
     suppliers: { text: 'Təchizatçılar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
-    settings: { text: 'Tənzimləmələr', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` }
+    settings: { text: 'Tənzimləmələr', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` }
 };
 
 const ROLE_MENU_ITEMS = {
@@ -60,7 +64,7 @@ export const showAdminLoginPrompt = () => {
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                 </div>
@@ -287,10 +291,10 @@ const showAdminTab = async (tabName, container) => {
                 await showDashboard(container);
                 break;
             case 'products':
-                await showProducts(container);
+                currentTabCleanup = await showProducts(container);
                 break;
             case 'orders':
-                await showOrders(container);
+                currentTabCleanup = await showOrders(container);
                 break;
             case 'sales':
                 await showSales(container);
@@ -330,9 +334,7 @@ const showAdminTab = async (tabName, container) => {
                 await showSettings(container);
                 break;
             case 'pos':
-                // Instead of calling launch POS here, renderAdminPanel will handle it.
-                // The POS will be launched into a modal-like container, not replacing the admin panel.
-                await showPOS(container);
+                currentTabCleanup = await showPOS(container);
                 break;
             default:
                 container.innerHTML = '<p class="text-center text-slate-500 py-8">Bu bölmə hazırlanmaqdadır...</p>';
@@ -387,6 +389,12 @@ const showDashboard = async (container) => {
 };
 
 const showSales = async (container) => {
+    container.innerHTML = `
+        <div class="flex justify-center py-8">
+            <div class="loading-spinner"></div>
+        </div>
+    `;
+
     try {
         const orders = await DataService.getOrders();
         const salesData = orders.filter(o => o.status === 'paid');
@@ -427,7 +435,7 @@ const showCustomers = async (container) => {
                 <h3 class="text-xl font-bold text-slate-800">Müştəri Siyahısı</h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                ${users.length > 0 ? users.map(user => createUserCard(user).outerHTML).join('') : `<div class="col-span-full text-center p-6">Heç bir müştəri tapılmadı.</div>`}
+                ${users.length > 0 ? users.map(user => createUserCard(user).outerHTML).join('') : `<div class="col-span-full text-center text-slate-500 py-8">Heç bir müştəri tapılmadı.</div>`}
             </div>
         `;
     } catch (error) {
@@ -438,34 +446,325 @@ const showCustomers = async (container) => {
 
 const showOrders = async (container) => {
     container.innerHTML = `
-        <div class="flex justify-center py-8">
-            <div class="loading-spinner"></div>
+        <div class="mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Sifarişlər</h3>
+        </div>
+        
+        <div id="orders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex justify-center py-8 col-span-full">
+                <div class="loading-spinner"></div>
+            </div>
         </div>
     `;
 
-    try {
-        const orders = await DataService.getOrders();
+    const ordersGrid = container.querySelector('#orders-grid');
 
-        container.innerHTML = `
-            <div class="mb-6">
-                <h3 class="text-xl font-bold text-slate-800">Sifarişlər</h3>
-            </div>
-            
-            <div id="orders-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                ${orders.map(order => createOrderCard(order).outerHTML).join('')}
-            </div>
-        `;
+    // Real-time listener for orders
+    const ordersColRef = collection(db, 'orders');
+    const q = query(ordersColRef, orderBy('createdAt', 'desc'));
 
-        // Add event listeners for order status updates
-        setupOrdersEventListeners(container);
-    } catch (error) {
-        console.error('Error loading orders:', error);
-        container.innerHTML = `
-            <div class="text-center py-8">
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        ordersGrid.innerHTML = ''; // Clear existing orders
+        
+        if (orders.length > 0) {
+            orders.forEach(order => {
+                ordersGrid.appendChild(createOrderCard(order));
+            });
+        } else {
+            ordersGrid.innerHTML = `
+                <div class="col-span-full text-center py-8">
+                    <p class="text-slate-500">Heç bir sifariş tapılmadı.</p>
+                </div>
+            `;
+        }
+    }, (error) => {
+        console.error("Error listening to orders: ", error);
+        ordersGrid.innerHTML = `
+            <div class="col-span-full text-center py-8">
                 <p class="text-red-500">Sifarişlər yüklənərkən xəta baş verdi.</p>
             </div>
         `;
+        NotificationService.show('Sifarişləri yükləyərkən xəta baş verdi!', 'error');
+    });
+
+    // Add event listeners for order status updates
+    setupOrdersEventListeners(container);
+
+    // Return the unsubscribe function for cleanup
+    return unsubscribe;
+};
+
+const showProducts = async (container) => {
+    container.innerHTML = `
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Məhsul İdarəetməsi</h3>
+            <div class="flex items-center space-x-3">
+                <button id="add-product-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
+                    <span class="flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
+                        <span>Yeni Məhsul</span>
+                    </span>
+                </button>
+                <button id="reset-db-btn" class="modern-btn bg-red-500 text-white px-6 py-3 rounded-xl font-semibold">
+                    <span class="flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m0 0H15"></path></svg>
+                        <span>Bazanı sıfırla</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-6 flex flex-col sm:flex-row gap-4">
+            <input type="text" id="product-search-input" placeholder="Məhsul axtar..." 
+                   class="ultra-modern-input flex-1 px-4 py-3 rounded-xl focus:outline-none text-base">
+            <select id="product-category-filter" class="ultra-modern-input w-full sm:w-auto px-4 py-3 rounded-xl focus:outline-none text-base">
+                <option value="all">Bütün Kateqoriyalar</option>
+                <!-- Categories will be loaded here -->
+            </select>
+        </div>
+
+        <div class="ultra-modern-card overflow-x-auto shadow-lg">
+            <table class="w-full text-sm text-left text-slate-500">
+                <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Şəkil</th>
+                        <th scope="col" class="px-6 py-3">Məhsul Adı</th>
+                        <th scope="col" class="px-6 py-3">Kateqoriya</th>
+                        <th scope="col" class="px-6 py-3">Qiymət</th>
+                        <th scope="col" class="px-6 py-3">Stok</th>
+                        <th scope="col" class="px-6 py-3">Endirim</th>
+                        <th scope="col" class="px-6 py-3">Aksiya</th>
+                    </tr>
+                </thead>
+                <tbody id="products-table-body">
+                    <tr><td colspan="7" class="text-center p-8"><div class="loading-spinner"></div></td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div id="product-modal-container"></div>
+    `;
+
+    const productsTableBody = container.querySelector('#products-table-body');
+    const productSearchInput = container.querySelector('#product-search-input');
+    const productCategoryFilter = container.querySelector('#product-category-filter');
+    const addProductBtn = container.querySelector('#add-product-btn');
+    const resetDbBtn = container.querySelector('#reset-db-btn');
+
+    let allProducts = [];
+    let allCategories = [];
+    let productsUnsubscribe = null; // Store unsubscribe function for cleanup
+
+    // Function to render the product table
+    const renderProductTable = (products) => {
+        productsTableBody.innerHTML = '';
+        if (products.length === 0) {
+            productsTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-500">Heç bir məhsul tapılmadı.</td></tr>`;
+            return;
+        }
+        products.forEach(product => {
+            productsTableBody.appendChild(createProductRow(product));
+        });
+    };
+
+    // Function to filter products based on search and category
+    const filterProducts = () => {
+        const searchTerm = productSearchInput.value.toLowerCase();
+        const selectedCategory = productCategoryFilter.value;
+
+        let filtered = allProducts.filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
+                                  (product.description && product.description.toLowerCase().includes(searchTerm));
+            const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        });
+        renderProductTable(filtered);
+    };
+
+    // Load categories for the filter dropdown
+    try {
+        allCategories = await DataService.getCategories();
+        productCategoryFilter.innerHTML = '<option value="all">Bütün Kateqoriyalar</option>' + 
+            allCategories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
+    } catch (error) {
+        console.error("Error loading categories for product filter:", error);
+        NotificationService.show('Kateqoriyalar yüklənərkən xəta baş verdi.', 'error');
     }
+
+    // Real-time listener for products
+    productsUnsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
+        allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        filterProducts(); // Re-filter and render on every update
+    }, (error) => {
+        console.error("Error listening to products:", error);
+        productsTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-500">Məhsullar yüklənərkən xəta baş verdi.</td></tr>`;
+        NotificationService.show('Məhsulları yükləyərkən xəta baş verdi!', 'error');
+    });
+
+    // Event listeners
+    productSearchInput.addEventListener('input', filterProducts);
+    productCategoryFilter.addEventListener('change', filterProducts);
+
+    addProductBtn.addEventListener('click', () => showProductModal(null, allCategories));
+
+    productsTableBody.addEventListener('click', async (event) => {
+        const editBtn = event.target.closest('.edit-product-btn');
+        const deleteBtn = event.target.closest('.delete-product-btn');
+        
+        if (editBtn) {
+            const productId = editBtn.dataset.productId;
+            const productToEdit = allProducts.find(p => p.id === productId);
+            if (productToEdit) {
+                showProductModal(productToEdit, allCategories);
+            }
+        } else if (deleteBtn) {
+            const productId = deleteBtn.dataset.productId;
+            const productToDelete = allProducts.find(p => p.id === productId);
+            if (productToDelete) {
+                const confirm = await NotificationService.showConfirm(`"${productToDelete.name}" məhsulunu silmək istədiyinizə əminsiniz?`);
+                if (confirm) {
+                    const loading = NotificationService.showLoading('Məhsul silinir...');
+                    const success = await DataService.deleteProduct(productId);
+                    NotificationService.hideLoading(loading);
+                    if (success) {
+                        NotificationService.show('Məhsul uğurla silindi!', 'success');
+                    } else {
+                        NotificationService.show('Məhsul silinərkən xəta baş verdi.', 'error');
+                    }
+                }
+            }
+        }
+    });
+
+    resetDbBtn.addEventListener('click', async () => {
+        const confirm = await NotificationService.showConfirm(
+            'Bütün məlumat bazasını sıfırlamaq istədiyinizə əminsiniz? Bütün sifarişlər, məhsullar, masalar və s. silinəcək və ilkin məlumatlarla əvəz olunacaq.',
+            'Bazanı sıfırla?',
+            'Bəli, sıfırla',
+            'Xeyr'
+        );
+        if (confirm) {
+            const loading = NotificationService.showLoading('Məlumat bazası sıfırlanır...');
+            try {
+                await DataService.resetDatabase();
+                NotificationService.show('Məlumat bazası uğurla sıfırlandı!', 'success');
+            } catch (error) {
+                console.error('Error resetting database:', error);
+                NotificationService.show('Məlumat bazası sıfırlanarkən xəta baş verdi.', 'error');
+            } finally {
+                NotificationService.hideLoading(loading);
+            }
+        }
+    });
+
+    // Return cleanup function to unsubscribe from real-time listener
+    return () => {
+        if (productsUnsubscribe) {
+            productsUnsubscribe(); // Detach the real-time listener
+            productsUnsubscribe = null;
+        }
+        productSearchInput.removeEventListener('input', filterProducts);
+        productCategoryFilter.removeEventListener('change', filterProducts);
+        // Note: For dynamically re-rendered elements like addProductBtn, resetDbBtn, and productsTableBody,
+        // their event listeners are implicitly cleaned up when their parent container's innerHTML is replaced.
+        // Explicit removal like this is primarily for listeners attached to static, long-lived elements or
+        // for more complex cleanup of event delegation patterns.
+    };
+};
+
+const showProductModal = (productData = null, categories = []) => {
+    const modalContainer = document.querySelector('#product-modal-container');
+    if (!modalContainer) return;
+
+    // Clear previous modal if any
+    modalContainer.innerHTML = '';
+
+    const modal = createElement('div', {
+        className: 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4'
+    });
+
+    const form = createAdminProductForm(productData, categories);
+
+    modal.innerHTML = `
+        <div class="ultra-modern-card p-0 w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-slate-800">${productData ? 'Məhsulu Redaktə Et' : 'Yeni Məhsul Əlavə Et'}</h2>
+                <button class="close-modal w-8 h-8 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center text-slate-600">&times;</button>
+            </div>
+            <div class="modal-content-area p-6 overflow-y-auto custom-scroll">
+                <!-- Form will be appended here -->
+            </div>
+        </div>
+    `;
+
+    modalContainer.appendChild(modal);
+    modal.querySelector('.modal-content-area').appendChild(form);
+
+    const closeModal = () => {
+        if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+        }
+    };
+
+    modal.querySelector('.close-modal').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            name: formData.get('name'),
+            description: formData.get('description'),
+            price: parseFloat(formData.get('price')),
+            imageUrl: formData.get('imageUrl'),
+            category: formData.get('category'),
+            discountPercentage: parseFloat(formData.get('discountPercentage')) || 0,
+            isCampaignItem: formData.get('isCampaignItem') === 'on',
+            stock: parseInt(formData.get('stock')) || 0
+        };
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalContent = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <span class="flex items-center justify-center space-x-2">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Yüklənir...</span>
+            </span>
+        `;
+        
+        const loadingNotification = NotificationService.showLoading(productData ? 'Məhsul yenilənir...' : 'Məhsul əlavə edilir...');
+
+        try {
+            let success = false;
+            if (productData) {
+                success = await DataService.updateProduct(productData.id, data);
+            } else {
+                success = await DataService.addProduct(data);
+            }
+
+            NotificationService.hideLoading(loadingNotification);
+
+            if (success) {
+                NotificationService.show(`Məhsul uğurla ${productData ? 'yeniləndi' : 'əlavə edildi'}!`, 'success');
+                closeModal();
+            } else {
+                NotificationService.show(`Məhsul ${productData ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi.`, 'error');
+            }
+        } catch (error) {
+            console.error('Error saving product:', error);
+            NotificationService.hideLoading(loadingNotification);
+            NotificationService.show('Məhsul saxlanılarkən xəta baş verdi.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
+        }
+    });
 };
 
 const showTables = async (container) => {
@@ -481,9 +780,7 @@ const showTables = async (container) => {
         container.innerHTML = `
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-slate-800">Masa İdarəetməsi</h3>
-                <button id="add-table-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
-                    Yeni Masa Əlavə Et
-                </button>
+                <button id="add-table-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Masa Əlavə Et</button>
             </div>
             
             <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -518,9 +815,7 @@ const showCategories = async (container) => {
         container.innerHTML = `
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-slate-800">Kateqoriya İdarəetməsi</h3>
-                <button id="add-category-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
-                    Yeni Kateqoriya Əlavə Et
-                </button>
+                <button id="add-category-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Kateqoriya Əlavə Et</button>
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -556,50 +851,194 @@ const showCategories = async (container) => {
 
 const showEmployees = async (container) => {
     container.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-slate-500">İşçi idarəetməsi bölməsi hazırlanmaqdadır...</p>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">İşçilər</h3>
+            <button id="add-employee-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni İşçi</button>
         </div>
+        <div id="employees-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+        </div>
+        <div id="employee-modal-container"></div>
     `;
+    const employees = await DataService.getUsers();
+    const grid = container.querySelector('#employees-grid');
+    grid.innerHTML = employees.length
+        ? ''
+        : '<p class="col-span-full text-center text-slate-500 py-8">Heç bir işçi yoxdur.</p>';
+    employees.forEach(emp => {
+        grid.appendChild(createUserCard(emp));
+    });
+    // TODO: wire up add/edit/delete event listeners using #add-employee-btn and .createEmployeeForm
 };
 
 const showInventory = async (container) => {
     container.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-slate-500">Anbar idarəetməsi bölməsi hazırlanmaqdadır...</p>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Anbar (Inventory)</h3>
+            <button id="add-inventory-item-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Məhsul</button>
         </div>
+        <div id="inventory-list" class="space-y-4">
+            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+        </div>
+        <div id="inventory-modal-container"></div>
     `;
+    const items = await DataService.getInventoryItems();
+    const list = container.querySelector('#inventory-list');
+    if (items.length === 0) {
+        list.innerHTML = '<p class="text-center text-slate-500 py-8">Heç bir məhsul tapılmadı.</p>';
+    } else {
+        list.innerHTML = '';
+        items.forEach(item => {
+            const card = createElement('div', { className: 'ultra-modern-card p-4 flex justify-between items-center' });
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-semibold text-slate-800">${item.name || item.id}</h4>
+                    <p class="text-sm text-slate-600">Miqdar: ${item.quantity || ''} ${item.unit || ''}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="edit-inventory-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${item.id}">Redaktə</button>
+                    <button class="delete-inventory-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${item.id}">Sil</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
 };
 
 const showPurchases = async (container) => {
     container.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-slate-500">Alış idarəetməsi bölməsi hazırlanmaqdadır...</p>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Alışlar</h3>
+            <button id="add-purchase-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Alış</button>
         </div>
+        <div id="purchases-list" class="space-y-4">
+            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+        </div>
+        <div id="purchase-modal-container"></div>
     `;
+    const purchases = await DataService.getPurchases();
+    const list = container.querySelector('#purchases-list');
+    if (purchases.length === 0) {
+        list.innerHTML = '<p class="text-center text-slate-500 py-8">Heç bir alış yoxdur.</p>';
+    } else {
+        list.innerHTML = '';
+        purchases.forEach(p => {
+            const card = createElement('div', { className: 'ultra-modern-card p-4 flex justify-between items-center' });
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-semibold text-slate-800">${p.itemName || p.id}</h4>
+                    <p class="text-sm text-slate-600">${p.quantity} ${p.unit || ''} @ ${p.unitCost} AZN</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="edit-purchase-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${p.id}">Redaktə</button>
+                    <button class="delete-purchase-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${p.id}">Sil</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
 };
 
 const showDiscounts = async (container) => {
     container.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-slate-500">Endirim idarəetməsi bölməsi hazırlanmaqdadır...</p>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Endirimlər</h3>
+            <button id="add-discount-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Endirim</button>
         </div>
+        <div id="discounts-list" class="space-y-4">
+            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+        </div>
+        <div id="discount-modal-container"></div>
     `;
+    const discounts = await DataService.getDiscounts();
+    const list = container.querySelector('#discounts-list');
+    if (discounts.length === 0) {
+        list.innerHTML = '<p class="text-center text-slate-500 py-8">Heç bir endirim yoxdur.</p>';
+    } else {
+        list.innerHTML = '';
+        discounts.forEach(d => {
+            const card = createElement('div', { className: 'ultra-modern-card p-4 flex justify-between items-center' });
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-semibold text-slate-800">${d.name}</h4>
+                    <p class="text-sm text-slate-600">${d.percentage}% ${d.isActive ? 'aktiv' : 'passiv'}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="edit-discount-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${d.id}">Redaktə</button>
+                    <button class="delete-discount-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${d.id}">Sil</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
 };
 
 const showRecipes = async (container) => {
     container.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-slate-500">Resept idarəetməsi bölməsi hazırlanmaqdadır...</p>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Reseptlər</h3>
+            <button id="add-recipe-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Resept</button>
         </div>
+        <div id="recipes-list" class="space-y-4">
+            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+        </div>
+        <div id="recipe-modal-container"></div>
     `;
+    const recipes = await DataService.getRecipes();
+    const list = container.querySelector('#recipes-list');
+    if (recipes.length === 0) {
+        list.innerHTML = '<p class="text-center text-slate-500 py-8">Heç bir resept yoxdur.</p>';
+    } else {
+        list.innerHTML = '';
+        recipes.forEach(r => {
+            const card = createElement('div', { className: 'ultra-modern-card p-4 flex justify-between items-center' });
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-semibold text-slate-800">${r.name || 'Resept'} </h4>
+                    <p class="text-sm text-slate-600">Məhsul ID: ${r.productId || '-'}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="edit-recipe-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${r.id}">Redaktə</button>
+                    <button class="delete-recipe-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${r.id}">Sil</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
 };
 
 const showSuppliers = async (container) => {
     container.innerHTML = `
-        <div class="text-center py-8">
-            <p class="text-slate-500">Təchizatçı idarəetməsi bölməsi hazırlanmaqdadır...</p>
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Təchizatçılar</h3>
+            <button id="add-supplier-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">Yeni Təchizatçı</button>
         </div>
+        <div id="suppliers-list" class="space-y-4">
+            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+        </div>
+        <div id="supplier-modal-container"></div>
     `;
+    const suppliers = await DataService.getSuppliers();
+    const list = container.querySelector('#suppliers-list');
+    if (suppliers.length === 0) {
+        list.innerHTML = '<p class="text-center text-slate-500 py-8">Heç bir təchizatçı yoxdur.</p>';
+    } else {
+        list.innerHTML = '';
+        suppliers.forEach(s => {
+            const card = createElement('div', { className: 'ultra-modern-card p-4 flex justify-between items-center' });
+            card.innerHTML = `
+                <div>
+                    <h4 class="font-semibold text-slate-800">${s.name}</h4>
+                    <p class="text-sm text-slate-600">${s.contactPerson || ''} ${s.phone || ''}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="edit-supplier-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${s.id}">Redaktə</button>
+                    <button class="delete-supplier-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-id="${s.id}">Sil</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
 };
 
 const showSettings = async (container) => {
@@ -704,165 +1143,168 @@ const showSettings = async (container) => {
     }
 };
 
-const showPOS = async (container) => {
-    // Show a button to launch the POS in fullscreen
-    container.innerHTML = `
-        <div class="text-center py-12">
-            <h2 class="text-2xl font-bold text-slate-800 mb-4">Kassa Sistemi (POS)</h2>
-            <p class="text-slate-600 mb-8 max-w-lg mx-auto">POS sistemini tam ekran rejimində açmaq üçün aşağıdakı düyməyə basın. Bu, kassir üçün optimal təcrübə təmin edəcək.</p>
-            <button id="launch-pos-fullscreen" class="premium-gradient-btn text-white px-8 py-4 rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                <span class="flex items-center justify-center space-x-3">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    <span>POS Sistemini Başlat</span>
-                </span>
-            </button>
+// Helper function for POS HTML template
+const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
+    <div class="pos-wrapper bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen flex flex-col">
+        <!-- POS Header with Function Buttons -->
+        <div class="pos-header glass-header sticky top-0 z-50">
+            <div class="flex items-center justify-between h-20 px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center space-x-4">
+                    <img src="/appicon.png" alt="Logo" class="app-logo h-10 w-auto hidden sm:block">
+                    <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">POS Sistemi</h1>
+                    <div class="relative">
+                        <input type="number" id="pos-table-number" placeholder="Masa №" 
+                            class="ultra-modern-input w-24 text-center px-3 py-2 rounded-xl text-base font-semibold"
+                            min="1" value="${posCurrentTableNumber || ''}">
+                    </div>
+                </div>
+                
+                <!-- Function Buttons -->
+                <div class="flex items-center space-x-2">
+                    <button id="pos-quick-sale-btn" class="pos-func-btn bg-green-100 text-green-700" title="F10 - Cəld Satış">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span class="hidden sm:inline">Cəld Satış (F10)</span>
+                    </button>
+                    <button id="pos-hold-order-btn" class="pos-func-btn bg-yellow-100 text-yellow-700" title="F2 - Sifarişi Saxla">
+                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
+                        <span class="hidden sm:inline">Saxla (F2)</span>
+                    </button>
+                    <button id="pos-new-order-btn" class="pos-func-btn bg-blue-100 text-blue-700" title="F1 - Yeni Sifariş">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
+                        <span class="hidden sm:inline">Yeni (F1)</span>
+                    </button>
+                    <!-- New "Ödənişlər" button -->
+                    <button id="pos-payments-btn" class="pos-func-btn bg-purple-100 text-purple-700" title="Ödənişlər">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 00-2-2v-6a2 2 0 002-2H9a2 2 0 002 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span class="hidden sm:inline">Ödənişlər</span>
+                    </button>
+                    <!-- Renamed "Geri" to "Çıxış" -->
+                    <button id="pos-logout-btn" class="pos-func-btn bg-red-500 text-white" title="Çıxış">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
+                        <span class="hidden sm:inline">Çıxış</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- POS Content Area -->
+        <div class="flex-1 grid grid-cols-12 gap-4 p-4 overflow-hidden">
+            <!-- Left Panel: Existing Orders List -->
+            <div id="pos-existing-orders-panel" class="col-span-12 lg:col-span-3 flex flex-col overflow-hidden">
+                <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex-shrink-0">Açıq Sifarişlər</h2>
+                    <div id="pos-open-orders-list" class="flex-1 space-y-2 overflow-y-auto custom-scroll pr-2">
+                        <!-- Orders will be loaded here -->
+                        <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Panel: Products & Search -->
+            <div class="col-span-12 lg:col-span-5 flex flex-col overflow-hidden">
+                <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
+                    <div class="mb-3 flex-shrink-0">
+                        <input type="text" id="pos-product-search" placeholder="Məhsul axtar..." 
+                            class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base">
+                    </div>
+                    <div id="pos-category-filters" class="flex flex-wrap gap-2 mb-3 flex-shrink-0">
+                        <button class="pos-category-btn active" data-category="all">Hamısı</button>
+                        ${posCategories.map(cat => `
+                            <button class="pos-category-btn" data-category="${cat.name}">${cat.name}</button>
+                        `).join('')}
+                        <button class="pos-category-btn campaign-btn" data-category="campaign">Kampaniyalar</button>
+                    </div>
+                    <div id="pos-product-list" class="flex-1 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 overflow-y-auto custom-scroll pr-2">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Current Order Details -->
+            <div id="pos-right-panel" class="col-span-12 lg:col-span-4 flex flex-col overflow-hidden">
+                <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 flex-shrink-0">Sifariş Detalları</h2>
+                    <div id="pos-current-order-items" class="flex-1 space-y-2 overflow-y-auto custom-scroll mb-3 pr-2">
+                        <!-- Order items will be loaded here -->
+                    </div>
+                    <div class="border-t border-slate-200 pt-3 space-y-3 flex-shrink-0">
+                        <div class="flex justify-between font-semibold text-slate-700 text-sm">
+                            <span>Cəmi:</span>
+                            <span id="pos-subtotal">0.00 AZN</span>
+                        </div>
+                        <div class="flex justify-between font-semibold text-slate-700 text-sm">
+                            <span>Endirim:</span>
+                            <span id="pos-discount">0.00 AZN</span>
+                        </div>
+                        <div class="flex justify-between text-xl font-bold text-slate-800 border-t pt-2">
+                            <span>Ümumi:</span>
+                            <span id="pos-total">0.00 AZN</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-3">
+                            <button id="pos-send-order-btn" class="pos-action-btn bg-blue-500 text-white disabled:bg-blue-300">
+                                Sifarişi Göndər
+                            </button>
+                            <button id="pos-mark-served-btn" class="pos-action-btn bg-orange-500 text-white disabled:bg-orange-300">
+                                Servis Edildi
+                            </button>
+                            <button id="pos-hold-order-btn-2" class="pos-action-btn bg-yellow-500 text-white disabled:bg-yellow-300">
+                                Saxla
+                            </button>
+                            <button id="pos-mark-paid-btn" class="pos-action-btn mark-as-paid-btn text-white disabled:opacity-50">
+                                Ödəniş Alındı
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
-    
-    document.getElementById('launch-pos-fullscreen').addEventListener('click', launchPOS);
 };
 
-const launchPOS = async () => {
-    const posContainer = document.getElementById('pos-modal-container');
-    const mainHeader = document.querySelector('header');
-    const appContent = document.getElementById('app-content');
-    
-    // Hide main header and app content
-    if(mainHeader) mainHeader.style.display = 'none';
-    if(appContent) appContent.style.display = 'none';
-    posContainer.style.display = 'block';
+const showPOS = async (container) => {
+    try {
+        const loadingNotification = NotificationService.showLoading('POS sistemi yüklənir...');
 
-    const loadingIndicator = NotificationService.showLoading('POS sistemi yüklənir...');
-    
-    // Load products and categories for POS
-    [posProducts, posCategories] = await Promise.all([
-        DataService.getProducts(),
-        DataService.getCategories()
-    ]);
+        // Load products and categories for POS
+        [posProducts, posCategories] = await Promise.all([
+            DataService.getProducts(),
+            DataService.getCategories()
+        ]);
 
-    // Get persistent table number
-    posCurrentTableNumber = parseInt(localStorage.getItem('posTableNumber')) || null;
-    posCurrentSelectedOrderId = null; // Ensure no order is selected by default on POS launch
+        NotificationService.hideLoading(loadingNotification);
 
-    posContainer.innerHTML = `
-        <div class="pos-wrapper bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen flex flex-col">
-            <!-- POS Header with Function Buttons -->
-            <div class="pos-header glass-header sticky top-0 z-50">
-                <div class="flex items-center justify-between h-20 px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center space-x-4">
-                        <img src="/appicon.png" alt="Logo" class="app-logo h-10 w-auto hidden sm:block">
-                        <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">POS Sistemi</h1>
-                        <div class="relative">
-                            <input type="number" id="pos-table-number" placeholder="Masa №" 
-                                class="ultra-modern-input w-24 text-center px-3 py-2 rounded-xl text-base font-semibold"
-                                min="1" value="${posCurrentTableNumber || ''}">
-                        </div>
-                    </div>
-                    
-                    <!-- Function Buttons -->
-                    <div class="flex items-center space-x-2">
-                        <button id="pos-quick-sale-btn" class="pos-func-btn bg-green-100 text-green-700" title="F10 - Cəld Satış">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span class="hidden sm:inline">Cəld Satış (F10)</span>
-                        </button>
-                        <button id="pos-hold-order-btn" class="pos-func-btn bg-yellow-100 text-yellow-700" title="F2 - Sifarişi Saxla">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0v2m0-2h2m-2 0h-2M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z"></path></svg>
-                            <span class="hidden sm:inline">Saxla (F2)</span>
-                        </button>
-                        <button id="pos-new-order-btn" class="pos-func-btn bg-blue-100 text-blue-700" title="F1 - Yeni Sifariş">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            <span class="hidden sm:inline">Yeni (F1)</span>
-                        </button>
-                        <button id="exit-pos" class="pos-func-btn bg-red-100 text-red-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            <span class="hidden sm:inline">Çıxış</span>
-                        </button>
-                    </div>
-                </div>
+        // Get persistent table number
+        posCurrentTableNumber = parseInt(localStorage.getItem('posTableNumber')) || null;
+        posCurrentSelectedOrderId = null; // Ensure no order is selected by default
+
+        container.innerHTML = getPOSHtmlTemplate(posCurrentTableNumber, posCategories);
+
+        setupPOSEventListeners(container); // Pass the correct container to setup listeners
+        renderPOSProducts(posProducts); // Initial rendering of all products
+        adminCartService.subscribe(updatePOSCartDisplay); // Subscribe to cart changes
+        updatePOSCartDisplay(); // Initial cart display
+        loadPOSExistingOrders(container); // Load existing orders when POS launches
+        setupPOSKeyboardShortcuts();
+
+        // Return a cleanup function for the POS tab
+        return () => {
+            if (posOrdersUnsubscribe) {
+                posOrdersUnsubscribe(); // Unsubscribe from real-time updates
+                posOrdersUnsubscribe = null;
+            }
+            adminCartService.unsubscribe(updatePOSCartDisplay); // Unsubscribe cart listener
+            document.removeEventListener('keydown', handlePOSKeyboardShortcuts); // Remove keyboard shortcuts
+        };
+
+    } catch (error) {
+        console.error('Error loading POS:', error);
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <p class="text-red-500">POS sistemi yüklənərkən xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.</p>
             </div>
-
-            <!-- POS Content Area -->
-            <div class="flex-1 grid grid-cols-12 gap-4 p-4 overflow-hidden">
-                <!-- Left Panel: Existing Orders List -->
-                <div id="pos-existing-orders-panel" class="col-span-12 lg:col-span-3 flex flex-col overflow-hidden">
-                    <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
-                        <h2 class="text-lg font-bold text-slate-800 mb-3 flex-shrink-0">Açıq Sifarişlər</h2>
-                        <div id="pos-open-orders-list" class="flex-1 space-y-2 overflow-y-auto custom-scroll pr-2">
-                            <!-- Orders will be loaded here -->
-                            <div class="flex justify-center py-8"><div class="loading-spinner"></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Middle Panel: Products & Search -->
-                <div class="col-span-12 lg:col-span-5 flex flex-col overflow-hidden">
-                    <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
-                        <div class="mb-3 flex-shrink-0">
-                            <input type="text" id="pos-product-search" placeholder="Məhsul axtar..." 
-                                class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base">
-                        </div>
-                        <div id="pos-category-filters" class="flex flex-wrap gap-2 mb-3 flex-shrink-0">
-                            <button class="pos-category-btn active" data-category="all">Hamısı</button>
-                            ${posCategories.map(cat => `
-                                <button class="pos-category-btn" data-category="${cat.name}">${cat.name}</button>
-                            `).join('')}
-                            <button class="pos-category-btn campaign-btn" data-category="campaign">Kampaniyalar</button>
-                        </div>
-                        <div id="pos-product-list" class="flex-1 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 overflow-y-auto custom-scroll pr-2">
-                            <!-- Products will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Panel: Current Order Details -->
-                <div id="pos-right-panel" class="col-span-12 lg:col-span-4 flex flex-col overflow-hidden">
-                    <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
-                        <h2 class="text-lg font-bold text-slate-800 mb-3 flex-shrink-0">Sifariş Detalları</h2>
-                        <div id="pos-current-order-items" class="flex-1 space-y-2 overflow-y-auto custom-scroll mb-3 pr-2">
-                            <!-- Order items will be loaded here -->
-                        </div>
-                        <div class="border-t border-slate-200 pt-3 space-y-3 flex-shrink-0">
-                            <div class="flex justify-between font-semibold text-slate-700 text-sm">
-                                <span>Cəmi:</span>
-                                <span id="pos-subtotal">0.00 AZN</span>
-                            </div>
-                            <div class="flex justify-between font-semibold text-slate-700 text-sm">
-                                <span>Endirim:</span>
-                                <span id="pos-discount">0.00 AZN</span>
-                            </div>
-                            <div class="flex justify-between text-xl font-bold text-slate-800 border-t pt-2">
-                                <span>Ümumi:</span>
-                                <span id="pos-total">0.00 AZN</span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2 pt-3">
-                                <button id="pos-send-order-btn" class="pos-action-btn bg-blue-500 text-white disabled:bg-blue-300">
-                                    Sifarişi Göndər
-                                </button>
-                                <button id="pos-mark-served-btn" class="pos-action-btn bg-orange-500 text-white disabled:bg-orange-300">
-                                    Servis Edildi
-                                </button>
-                                <button id="pos-hold-order-btn-2" class="pos-action-btn bg-yellow-500 text-white disabled:bg-yellow-300">
-                                    Sifarişi Saxla
-                                </button>
-                                <button id="pos-mark-paid-btn" class="pos-action-btn mark-as-paid-btn text-white disabled:opacity-50">
-                                    Ödəniş Alındı
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    NotificationService.hideLoading(loadingIndicator);
-
-    // Add event listeners for POS elements
-    setupPOSEventListeners(posContainer);
-    renderPOSProducts(posProducts); // Initial rendering of all products
-    adminCartService.subscribe(updatePOSCartDisplay); // Subscribe to cart changes
-    updatePOSCartDisplay(); // Initial cart display
-    loadPOSExistingOrders(); // Load existing orders when POS launches
+        `;
+        return () => {}; // Return an empty cleanup function on error
+    }
 };
 
 // Helper functions (simplified implementations)
@@ -872,8 +1314,43 @@ const setupProductsEventListeners = (container, categories) => {
 };
 
 const setupOrdersEventListeners = (container) => {
-    // Basic event listener setup - implementation would be more detailed
-    console.log('Setting up orders event listeners');
+    container.addEventListener('click', async (event) => {
+        const targetBtn = event.target.closest('.update-status-btn');
+        if (targetBtn) {
+            const orderCard = targetBtn.closest('[data-order-id]');
+            if (!orderCard) return;
+
+            const orderId = orderCard.dataset.orderId;
+            const newStatus = targetBtn.dataset.status;
+
+            // Show loading state on button
+            const originalButtonContent = targetBtn.innerHTML;
+            targetBtn.disabled = true;
+            targetBtn.innerHTML = `
+                <span class="flex items-center justify-center space-x-2">
+                    <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Yenilənir...</span>
+                </span>
+            `;
+
+            try {
+                const success = await DataService.updateOrder(orderId, newStatus);
+                if (success) {
+                    NotificationService.show(`Sifariş #${orderId.substring(0, 6)} statusu yeniləndi!`, 'success');
+                } else {
+                    NotificationService.show('Sifariş statusu yenilənərkən xəta baş verdi.', 'error');
+                    targetBtn.innerHTML = originalButtonContent; // Revert on failure
+                }
+            } catch (error) {
+                console.error("Error updating order status:", error);
+                NotificationService.show('Status yenilənərkən xəta baş verdi!', 'error');
+                targetBtn.innerHTML = originalButtonContent; // Revert on failure
+            } finally {
+                targetBtn.disabled = false; // Button will be re-rendered by snapshot anyway, but good practice
+            }
+        }
+    });
+    console.log('Orders event listeners are set up.');
 };
 
 const setupTablesEventListeners = (container) => {
@@ -887,121 +1364,406 @@ const setupCategoriesEventListeners = (container) => {
 };
 
 const setupPOSEventListeners = (container) => {
-    container.addEventListener('click', async (event) => {
-        const productCard = event.target.closest('.pos-product-card');
-        if (productCard) {
-            const productId = productCard.dataset.productId;
+    // Get all POS specific elements from within the container
+    const posTableNumberInput = container.querySelector('#pos-table-number');
+    const posProductSearchInput = container.querySelector('#pos-product-search');
+    const posCategoryFilters = container.querySelector('#pos-category-filters');
+    const posProductList = container.querySelector('#pos-product-list');
+    const posCurrentOrderItems = container.querySelector('#pos-current-order-items');
+    const posPlaceOrderBtn = container.querySelector('#pos-send-order-btn');
+    const posMarkServedBtn = container.querySelector('#pos-mark-served-btn');
+    const posMarkPaidBtn = container.querySelector('#pos-mark-paid-btn');
+    const posNewOrderBtn = container.querySelector('#pos-new-order-btn');
+    const posHoldOrderBtn = container.querySelector('#pos-hold-order-btn'); // Header button
+    const posHoldOrderBtn2 = container.querySelector('#pos-hold-order-btn-2'); // Right panel button
+    const posQuickSaleBtn = container.querySelector('#pos-quick-sale-btn');
+    const posPaymentsBtn = container.querySelector('#pos-payments-btn'); // New payments button
+    const posLogoutBtn = container.querySelector('#pos-logout-btn'); // New logout button
+
+    // Event delegation for product clicks
+    if (posProductList) {
+        posProductList.addEventListener('click', async (event) => {
+            const card = event.target.closest('.pos-product-card');
+            if (!card) return;
+            const productId = card.dataset.productId;
             const product = posProducts.find(p => p.id === productId);
-            if (product && (product.stock > 0 || product.stock === undefined)) {
-                adminCartService.addItem(product);
+            if (product) {
+                if (product.stock > 0 || product.stock === undefined) { // Allow undefined stock for simplicity if not tracked
+                    adminCartService.addItem(product);
+                } else {
+                    NotificationService.show('Məhsul stokda yoxdur', 'warning');
+                }
+            }
+        });
+    }
+
+    // Event delegation for category filters
+    if (posCategoryFilters) {
+        posCategoryFilters.addEventListener('click', (event) => {
+            const btn = event.target.closest('.pos-category-btn');
+            if (btn) {
+                container.querySelectorAll('.pos-category-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const category = btn.dataset.category;
+                const searchTerm = posProductSearchInput ? posProductSearchInput.value.toLowerCase() : '';
+                filterPOSProducts(searchTerm, category);
+            }
+        });
+    }
+
+    // Event delegation for cart item quantity/remove
+    if (posCurrentOrderItems) {
+        posCurrentOrderItems.addEventListener('click', (event) => {
+            const btn = event.target.closest('button');
+            if (!btn) return;
+
+            const itemEl = btn.closest('.pos-cart-item');
+            if (!itemEl) return;
+
+            const index = Number(itemEl.dataset.index);
+            const action = btn.dataset.action;
+            const items = adminCartService.getItems();
+
+            if (isNaN(index) || index < 0 || index >= items.length) {
+                console.error('Invalid cart item index or action.');
+                return;
+            }
+
+            if (action === 'remove') {
+                adminCartService.removeItem(index);
+                NotificationService.show('Məhsul səbətdən silindi.', 'info');
+            } else if (action === 'increase') {
+                adminCartService.updateQuantity(index, items[index].quantity + 1);
+            } else if (action === 'decrease') {
+                adminCartService.updateQuantity(index, items[index].quantity - 1);
+            }
+        });
+
+        // Handle direct input for quantity
+        posCurrentOrderItems.addEventListener('change', (event) => {
+            const input = event.target;
+            if (input.tagName === 'INPUT' && input.type === 'number') {
+                const itemEl = input.closest('.pos-cart-item');
+                if (!itemEl) return;
+                const index = Number(itemEl.dataset.index);
+                const newQuantity = parseInt(input.value, 10);
+
+                if (!isNaN(newQuantity) && newQuantity >= 0) {
+                    adminCartService.updateQuantity(index, newQuantity);
+                } else {
+                    input.value = adminCartService.getItems()[index].quantity; // Revert to current quantity
+                }
+            }
+        });
+    }
+    
+    // Search input listener
+    if (posProductSearchInput) {
+        posProductSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const activeCategoryBtn = container.querySelector('.pos-category-btn.active');
+            const activeCategory = activeCategoryBtn ? activeCategoryBtn.dataset.category : 'all';
+            filterPOSProducts(searchTerm, activeCategory);
+        });
+    }
+
+    // Table number input listener
+    if (posTableNumberInput) {
+        posTableNumberInput.addEventListener('change', (e) => {
+            posCurrentTableNumber = parseInt(e.target.value);
+            if(posCurrentTableNumber > 0) {
+                localStorage.setItem('posTableNumber', posCurrentTableNumber);
+                updatePOSCartDisplay(); // Re-enable place order button if cart has items
             } else {
-                NotificationService.show('Məhsul stokda yoxdur', 'warning');
+                localStorage.removeItem('posTableNumber');
+                posCurrentTableNumber = null;
+                updatePOSCartDisplay(); // Disable place order button
             }
-        }
+        });
+    }
 
-        const categoryBtn = event.target.closest('.pos-category-btn');
-        if(categoryBtn) {
-            container.querySelectorAll('.pos-category-btn').forEach(btn => btn.classList.remove('active'));
-            categoryBtn.classList.add('active');
-            const category = categoryBtn.dataset.category;
-            const searchTerm = container.querySelector('#pos-product-search').value.toLowerCase();
-            filterPOSProducts(searchTerm, category);
-        }
+    // Place/Update Order button
+    if (posPlaceOrderBtn) {
+        posPlaceOrderBtn.addEventListener('click', async () => {
+            const loading = NotificationService.showLoading('Sifariş göndərilir...');
+            const orderItems = adminCartService.getItems();
+            
+            if (orderItems.length === 0) {
+                NotificationService.show('Səbət boşdur.', 'error');
+                NotificationService.hideLoading(loading);
+                return;
+            }
 
-        const exitBtn = event.target.closest('#exit-pos');
-        if(exitBtn) {
-            const mainHeader = document.querySelector('header');
-            const appContent = document.getElementById('app-content');
-            posContainer.style.display = 'none';
-            posContainer.innerHTML = '';
-            if(mainHeader) mainHeader.style.display = 'flex';
-            if(appContent) appContent.style.display = 'block';
-             // Re-render the admin panel to its previous state
-            const adminContainer = document.getElementById('admin-section');
-            renderAdminPanel(adminContainer, getCurrentRole());
-        }
+            if (!posCurrentTableNumber || posCurrentTableNumber <= 0) {
+                NotificationService.show('Zəhmət olmasa masa nömrəsini daxil edin.', 'error');
+                posTableNumberInput.focus();
+                NotificationService.hideLoading(loading);
+                return;
+            }
 
-        const openOrder = event.target.closest('.pos-order-list-item');
-        if (openOrder) {
-            posCurrentSelectedOrderId = openOrder.dataset.orderId;
-            const selectedOrder = posActiveOrders.find(o => o.id === posCurrentSelectedOrderId);
-            if (selectedOrder) {
+            try {
+                if (posCurrentSelectedOrderId) {
+                    // Update existing order
+                    const success = await DataService.updateOrderItems(posCurrentSelectedOrderId, orderItems);
+                    if (success) {
+                        NotificationService.show(`Masa ${posCurrentTableNumber} sifarişi yeniləndi!`, 'success');
+                    } else {
+                        NotificationService.show('Sifariş yenilənərkən xəta baş verdi.', 'error');
+                    }
+                } else {
+                    // Place new order
+                    const newOrder = {
+                        tableNumber: posCurrentTableNumber,
+                        items: orderItems.map(item => ({
+                            id: item.id,
+                            name: item.name,
+                            quantity: item.quantity,
+                            priceAtOrder: item.priceAtOrder
+                        })),
+                        status: 'pending',
+                        userId: getCurrentUser()?.uid || 'pos-user', // Assign a user ID for POS orders
+                        orderSource: 'pos'
+                    };
+                    const result = await DataService.addOrder(newOrder);
+                    if (result && result.id) {
+                        NotificationService.show(`Masa ${posCurrentTableNumber} üçün yeni sifariş göndərildi!`, 'success');
+                        posCurrentSelectedOrderId = result.id; // Select the new order
+                    } else {
+                        NotificationService.show('Yeni sifariş göndərilərkən xəta baş verdi.', 'error');
+                    }
+                }
                 adminCartService.clear();
-                selectedOrder.items.forEach(item => {
-                    adminCartService.addItem({ ...item, price: item.priceAtOrder }, item.quantity);
-                });
-                document.getElementById('pos-table-number').value = selectedOrder.tableNumber;
-                localStorage.setItem('posTableNumber', selectedOrder.tableNumber);
-                posCurrentTableNumber = selectedOrder.tableNumber;
+                posTableNumberInput.value = '';
+                localStorage.removeItem('posTableNumber');
+                posCurrentTableNumber = null;
+                posCurrentSelectedOrderId = null;
+                // No need to manually reload orders, real-time listener will handle it.
+            } catch (error) {
+                console.error('Error processing order:', error);
+                NotificationService.show(`Sifariş xətası: ${error.message}`, 'error');
+            } finally {
+                NotificationService.hideLoading(loading);
             }
-            loadPOSExistingOrders(); // Re-render to show selection
-        }
+        });
+    }
 
-        const newOrderBtn = event.target.closest('#pos-new-order-btn');
-        if(newOrderBtn){
+    // Mark as Served button
+    if (posMarkServedBtn) {
+        posMarkServedBtn.addEventListener('click', async () => {
+            if (!posCurrentSelectedOrderId) {
+                NotificationService.show('Zəhmət olmasa servis ediləcək sifarişi seçin.', 'warning');
+                return;
+            }
+            const loading = NotificationService.showLoading('Sifariş servis edilir...');
+            try {
+                const success = await DataService.updateOrder(posCurrentSelectedOrderId, 'served');
+                if (success) {
+                    NotificationService.show('Sifariş servis edildi!', 'success');
+                    adminCartService.clear();
+                    posTableNumberInput.value = '';
+                    localStorage.removeItem('posTableNumber');
+                    posCurrentTableNumber = null;
+                    posCurrentSelectedOrderId = null;
+                } else {
+                    NotificationService.show('Sifariş statusu yenilənərkən xəta baş verdi.', 'error');
+                }
+            } catch (error) {
+                console.error('Error marking order as served:', error);
+                NotificationService.show('Servis zamanı xəta baş verdi.', 'error');
+            } finally {
+                NotificationService.hideLoading(loading);
+            }
+        });
+    }
+
+    // Mark as Paid button
+    if (posMarkPaidBtn) {
+        posMarkPaidBtn.addEventListener('click', async () => {
+            if (!posCurrentSelectedOrderId) {
+                NotificationService.show('Zəhmət olmasa ödəniş alınacaq sifarişi seçin.', 'warning');
+                return;
+            }
+            const loading = NotificationService.showLoading('Ödəniş qeydə alınır...');
+            try {
+                const success = await DataService.updateOrder(posCurrentSelectedOrderId, 'paid');
+                if (success) {
+                    NotificationService.show('Sifariş ödəndi və tamamlandı!', 'success');
+                    adminCartService.clear();
+                    posTableNumberInput.value = '';
+                    localStorage.removeItem('posTableNumber');
+                    posCurrentTableNumber = null;
+                    posCurrentSelectedOrderId = null;
+                } else {
+                    NotificationService.show('Ödəniş qeydə alınarkən xəta baş verdi.', 'error');
+                }
+            } catch (error) {
+                console.error('Error marking order as paid:', error);
+                NotificationService.show('Ödəniş zamanı xəta baş verdi.', 'error');
+            } finally {
+                NotificationService.hideLoading(loading);
+            }
+        });
+    }
+
+    // New Order button
+    if (posNewOrderBtn) {
+        posNewOrderBtn.addEventListener('click', () => {
             adminCartService.clear();
             posCurrentSelectedOrderId = null;
-            document.getElementById('pos-table-number').value = '';
+            posTableNumberInput.value = '';
             localStorage.removeItem('posTableNumber');
             posCurrentTableNumber = null;
-            loadPOSExistingOrders();
-            NotificationService.show('Yeni sifariş üçün səbət təmizləndi', 'info');
+            NotificationService.show('Yeni sifariş üçün səbət təmizləndi.', 'info');
+        });
+    }
+
+    // Payments button handler
+    if (posPaymentsBtn) {
+        posPaymentsBtn.addEventListener('click', () => {
+            // Programmatically switch to the 'sales' tab in the admin panel
+            const adminMenu = document.getElementById('admin-menu');
+            if (adminMenu) {
+                const salesTabButton = adminMenu.querySelector('.admin-menu-item[data-tab="sales"]');
+                if (salesTabButton) {
+                    salesTabButton.click();
+                } else {
+                    NotificationService.show('Satışlar paneli tapılmadı.', 'error');
+                }
+            }
+        });
+    }
+
+    // Logout button handler
+    if (posLogoutBtn) {
+        posLogoutBtn.addEventListener('click', async () => {
+            const confirmed = await NotificationService.showConfirm('POS sistemindən çıxmaq istədiyinizə əminsinizmi?');
+            if (!confirmed) {
+                return; // User cancelled logout
+            }
+
+            localStorage.removeItem('posTableNumber'); // Clear POS specific state
+            posCurrentTableNumber = null;
+            posCurrentSelectedOrderId = null;
+            adminCartService.clear(); // Clear any remaining cart items
+            const result = await logout(); // Use the global logout function
+            if (result.success) {
+                NotificationService.show('POS sistemindən uğurla çıxış etdiniz.', 'success');
+                window.dispatchEvent(new CustomEvent('reinitialize-app')); // Reinitialize app to go back to role selection
+            } else {
+                NotificationService.show(`Çıxış xətası: ${result.error}`, 'error');
+            }
+        });
+    }
+
+    // Hold Order button (both header and right panel)
+    const handleHoldOrder = () => {
+        if (adminCartService.getItems().length === 0 && !posCurrentSelectedOrderId) {
+            NotificationService.show('Saxlanacaq sifariş yoxdur.', 'warning');
+            return;
         }
 
-        const sendOrderBtn = event.target.closest('#pos-send-order-btn');
-        if (sendOrderBtn && !sendOrderBtn.disabled) {
-            // Logic to send/update order
-        }
-        
-        const markPaidBtn = event.target.closest('#pos-mark-paid-btn');
-        if (markPaidBtn && !markPaidBtn.disabled) {
-            // Logic to mark as paid
-        }
-    });
-
-    const searchInput = container.querySelector('#pos-product-search');
-    searchInput.addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const activeCategory = container.querySelector('.pos-category-btn.active').dataset.category;
-        filterPOSProducts(searchTerm, activeCategory);
-    });
-
-    const tableInput = container.querySelector('#pos-table-number');
-    tableInput.addEventListener('change', (e) => {
-        posCurrentTableNumber = parseInt(e.target.value);
-        if(posCurrentTableNumber) {
-            localStorage.setItem('posTableNumber', posCurrentTableNumber);
-        } else {
+        if (posCurrentSelectedOrderId) {
+            // If an existing order is selected, simply unselect it and clear the cart
+            adminCartService.clear();
+            posCurrentSelectedOrderId = null;
+            posTableNumberInput.value = '';
             localStorage.removeItem('posTableNumber');
+            posCurrentTableNumber = null;
+            NotificationService.show('Sifariş masadan ayrıldı.', 'info');
+        } else {
+            // If a new order is being built, this would typically save it as a draft.
+            // For now, we'll just clear it like a 'new order' action but keep table number if set.
+            adminCartService.clear();
+            NotificationService.show('Cari sifariş saxlanıldı.', 'info');
         }
+    };
+    if (posHoldOrderBtn) posHoldOrderBtn.addEventListener('click', handleHoldOrder);
+    if (posHoldOrderBtn2) posHoldOrderBtn2.addEventListener('click', handleHoldOrder);
+
+    // Quick Sale button
+    if (posQuickSaleBtn) {
+        posQuickSaleBtn.addEventListener('click', () => {
+            adminCartService.clear();
+            posCurrentSelectedOrderId = null;
+            posTableNumberInput.value = '999'; // Use a special table number for quick sales
+            localStorage.setItem('posTableNumber', 999);
+            posCurrentTableNumber = 999;
+            NotificationService.show('Cəld satış rejiminə keçdiniz (Masa 999).', 'info');
+        });
+    }
+
+    // Event delegation for selecting existing orders
+    const posOpenOrdersList = container.querySelector('#pos-open-orders-list');
+    if (posOpenOrdersList) {
+        posOpenOrdersList.addEventListener('click', (event) => {
+            const openOrder = event.target.closest('.pos-order-list-item');
+            if (openOrder) {
+                const orderId = openOrder.dataset.orderId;
+                posCurrentSelectedOrderId = orderId;
+                const selectedOrder = posActiveOrders.find(o => o.id === posCurrentSelectedOrderId);
+                if (selectedOrder) {
+                    adminCartService.clear(); // Clear current cart
+                    selectedOrder.items.forEach(item => {
+                        // Ensure priceAtOrder is used as the base price for cart items
+                        adminCartService.addItem({ ...item, price: item.priceAtOrder }, item.quantity);
+                    });
+                    posTableNumberInput.value = selectedOrder.tableNumber;
+                    localStorage.setItem('posTableNumber', selectedOrder.tableNumber);
+                    posCurrentTableNumber = selectedOrder.tableNumber;
+                    NotificationService.show(`Masa ${selectedOrder.tableNumber} sifarişi yükləndi.`, 'info');
+                }
+                loadPOSExistingOrders(container); // Re-render to show selection
+            }
+        });
+    }
+
+    // Setup real-time listener for existing orders in POS
+    posOrdersUnsubscribe = onSnapshot(query(collection(db, 'orders'), orderBy('createdAt', 'desc')), (snapshot) => {
+        posActiveOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                                    .filter(o => o.status && !['paid', 'cancelled'].includes(o.status));
+        posActiveOrders.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)); // Sort by oldest first
+        loadPOSExistingOrders(container); // Re-render the list
+    }, (error) => {
+        console.error("Error listening to POS orders:", error);
+        NotificationService.show('Açıq sifarişlər yüklənərkən xəta baş verdi.', 'error');
     });
 
-    console.log('POS event listeners are set up.');
+    console.log('POS event listeners are set up for container:', container.id);
+};
+
+const handlePOSKeyboardShortcuts = (e) => {
+    // Check if the current tab is POS to avoid conflicts with other parts of the app
+    if (currentAdminTab !== 'pos') return;
+
+    switch(e.key) {
+        case 'F1':
+            e.preventDefault();
+            document.getElementById('pos-new-order-btn')?.click();
+            break;
+        case 'F2':
+            e.preventDefault();
+            document.getElementById('pos-hold-order-btn')?.click();
+            break;
+        // F3 for recall or other function if needed
+        case 'F10':
+            e.preventDefault();
+            document.getElementById('pos-quick-sale-btn')?.click();
+            break;
+        case 'Enter':
+            if (e.ctrlKey) { // Ctrl+Enter to place/update order
+                e.preventDefault();
+                document.getElementById('pos-send-order-btn')?.click();
+            }
+            break;
+        case 'F9': // Example: F9 to mark as paid
+            e.preventDefault();
+            document.getElementById('pos-mark-paid-btn')?.click();
+            break;
+    }
 };
 
 const setupPOSKeyboardShortcuts = () => {
-    document.addEventListener('keydown', (e) => {
-        if (!document.getElementById('pos-modal-container').innerHTML) return; // Only when POS is open
-        
-        switch(e.key) {
-            case 'F1':
-                e.preventDefault();
-                document.getElementById('pos-new-order-btn')?.click();
-                break;
-            case 'F2':
-                e.preventDefault();
-                document.getElementById('pos-hold-order-btn')?.click();
-                break;
-            case 'F3':
-                e.preventDefault();
-                document.getElementById('pos-recall-order-btn')?.click();
-                break;
-            case 'F10':
-                e.preventDefault();
-                document.getElementById('pos-quick-sale-btn')?.click();
-                break;
-        }
-    });
+    document.addEventListener('keydown', handlePOSKeyboardShortcuts);
 };
 
 const filterPOSProducts = (searchTerm, category) => {
@@ -1043,8 +1805,14 @@ const updatePOSCartDisplay = () => {
     const items = adminCartService.getItems();
     const total = adminCartService.getTotal();
     const cartContainer = document.getElementById('pos-current-order-items');
-    
-    if (!cartContainer) return;
+    const subtotalEl = document.getElementById('pos-subtotal');
+    const discountEl = document.getElementById('pos-discount');
+    const finalTotalEl = document.getElementById('pos-total');
+    const posPlaceOrderBtn = document.getElementById('pos-send-order-btn');
+    const posMarkServedBtn = document.getElementById('pos-mark-served-btn');
+    const posMarkPaidBtn = document.getElementById('pos-mark-paid-btn');
+
+    if (!cartContainer || !subtotalEl || !discountEl || !finalTotalEl || !posPlaceOrderBtn || !posMarkServedBtn || !posMarkPaidBtn) return;
 
     cartContainer.innerHTML = '';
 
@@ -1056,29 +1824,33 @@ const updatePOSCartDisplay = () => {
         cartContainer.innerHTML = `<p class="text-center text-slate-500 py-8">Səbət boşdur</p>`;
     }
 
-    document.getElementById('pos-subtotal').textContent = `${total.toFixed(2)} AZN`;
-    document.getElementById('pos-discount').textContent = `0.00 AZN`; // Placeholder
-    document.getElementById('pos-total').textContent = `${total.toFixed(2)} AZN`;
+    // Assuming no discounts applied at the cart level for simplicity here
+    const discount = 0; // In a real POS, this would be calculated based on discounts applied
+    const finalTotal = total - discount;
 
-    // Update button states
-    const canSendOrder = items.length > 0 && posCurrentTableNumber > 0 && !posCurrentSelectedOrderId;
-    const canUpdateOrder = items.length > 0 && posCurrentSelectedOrderId;
-    const canPay = items.length > 0 && posCurrentSelectedOrderId;
+    subtotalEl.textContent = `${total.toFixed(2)} AZN`;
+    discountEl.textContent = `${discount.toFixed(2)} AZN`;
+    finalTotalEl.textContent = `${finalTotal.toFixed(2)} AZN`;
 
-    document.getElementById('pos-send-order-btn').disabled = !(canSendOrder || canUpdateOrder);
-    document.getElementById('pos-mark-paid-btn').disabled = !canPay;
+    // Enable/disable buttons based on cart state and selected order
+    const hasItems = items.length > 0;
+    const hasTableNumber = posCurrentTableNumber > 0;
+    const hasSelectedOrder = posCurrentSelectedOrderId !== null;
+
+    posPlaceOrderBtn.disabled = !hasItems || (!hasTableNumber && !hasSelectedOrder);
+    posPlaceOrderBtn.textContent = hasSelectedOrder ? 'Sifarişi Yenilə' : 'Sifarişi Göndər';
+    
+    posMarkServedBtn.disabled = !hasSelectedOrder;
+    posMarkPaidBtn.disabled = !hasSelectedOrder;
 };
 
-const loadPOSExistingOrders = async () => {
-    const listContainer = document.getElementById('pos-open-orders-list');
+const loadPOSExistingOrders = async (container) => {
+    const listContainer = container.querySelector('#pos-open-orders-list');
     if(!listContainer) return;
 
     listContainer.innerHTML = `<div class="flex justify-center py-8"><div class="loading-spinner"></div></div>`;
     
-    const allOrders = await DataService.getOrders();
-    posActiveOrders = allOrders.filter(o => o.status && !['paid', 'cancelled'].includes(o.status));
-    posActiveOrders.sort((a, b) => (a.createdAt.seconds > b.createdAt.seconds) ? -1 : 1);
-
+    // posActiveOrders is updated by the real-time listener now, just render
     listContainer.innerHTML = '';
 
     if (posActiveOrders.length > 0) {
@@ -1091,58 +1863,37 @@ const loadPOSExistingOrders = async () => {
     }
 };
 
-const createPOSProductCard = (product) => {
-    const price = product.discountPercentage > 0 
-        ? (product.price * (1 - product.discountPercentage / 100)) 
-        : product.price;
-
-    const stock = product.stock !== undefined ? product.stock : 99;
-    const outOfStock = stock <= 0;
-
-    const card = createElement('div', {
-        className: `pos-product-card group ${outOfStock ? 'out-of-stock' : ''}`,
-        dataset: { productId: product.id }
-    });
-
-    card.innerHTML = `
-        <div class="relative w-full aspect-square overflow-hidden rounded-xl">
-            <img src="${product.imageUrl || 'https://placehold.co/200x200/e0f2fe/0284c7?text=No+Image'}" 
-                 alt="${product.name}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            ${outOfStock ? `<div class="absolute inset-0 bg-white/70 flex items-center justify-center"><span class="font-bold text-red-500">Stokda yoxdur</span></div>` : ''}
-        </div>
-        <h4 class="product-name font-semibold text-xs text-white absolute bottom-2 left-2 right-2 truncate">${product.name}</h4>
-        <span class="product-price absolute top-2 right-2 bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">${price.toFixed(2)}</span>
+const createProductRow = (product) => {
+    return `
+        <tr class="border-b border-slate-200">
+            <td class="px-6 py-3">
+                <div class="flex items-center space-x-2">
+                    <img src="${product.imageUrl || '/default-product.png'}" class="w-10 h-10 rounded" alt="Product Image">
+                </div>
+            </td>
+            <td class="px-6 py-3">
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-slate-800">${product.name}</span>
+                    <span class="text-sm text-slate-600">${product.category}</span>
+                </div>
+            </td>
+            <td class="px-6 py-3">
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-slate-800">${product.price.toFixed(2)} AZN</span>
+                    <span class="text-sm text-slate-600">${product.discountPercentage}% endirim</span>
+                </div>
+            </td>
+            <td class="px-6 py-3">
+                <div class="flex items-center space-x-2">
+                    <span class="font-semibold text-slate-800">${product.stock || 'Yox'}</span>
+                </div>
+            </td>
+            <td class="px-6 py-3">
+                <div class="flex items-center space-x-2">
+                    <button class="edit-product-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-product-id="${product.id}">Redaktə</button>
+                    <button class="delete-product-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-product-id="${product.id}">Sil</button>
+                </div>
+            </td>
+        </tr>
     `;
-    
-    card.querySelector('img').onerror = function() {
-        this.src = 'https://placehold.co/200x200/e0f2fe/0284c7?text=No+Image';
-    };
-
-    return card;
-};
-
-const createPOSCartItem = (item, index) => {
-    const itemEl = createElement('div', {
-        className: 'pos-cart-item flex items-center p-2 rounded-lg hover:bg-slate-100',
-        dataset: { index: index }
-    });
-
-    itemEl.innerHTML = `
-        <div class="flex-1">
-            <p class="font-semibold text-sm text-slate-800 leading-tight">${item.name}</p>
-            <p class="text-xs text-slate-500">${item.priceAtOrder.toFixed(2)} AZN</p>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button class="cart-quantity-btn" data-action="decrease">-</button>
-            <input type="number" value="${item.quantity}" class="w-10 text-center font-semibold bg-transparent border-b border-slate-300 focus:outline-none">
-            <button class="cart-quantity-btn" data-action="increase">+</button>
-        </div>
-        <p class="w-20 text-right font-bold text-sm text-primary-700">${(item.priceAtOrder * item.quantity).toFixed(2)}</p>
-        <button class="cart-remove-btn" data-action="remove">&times;</button>
-    `;
-    
-    // Event listeners for quantity changes can be attached here
-    // For simplicity in this response, they are delegated in setupPOSEventListeners
-    return itemEl;
 };

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>POS Terminal – Eat & Drink App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              800: '#075985',
+              900: '#0c4a6e',
+            },
+            accent: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "./services/dataService.js": "./services/dataService.js",
+      "./utils/cartService.js": "./utils/cartService.js",
+      "./components.js": "./components.js",
+      "./utils/notificationService.js": "./utils/notificationService.js",
+      "firebase/app": "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js",
+      "firebase/functions": "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js"
+    }
+  }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col">
+  <header class="glass-header px-4 py-3 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-slate-800">Kassa Sistemi (POS)</h1>
+    <div class="flex items-center space-x-2">
+      <input id="pos-table-input" type="number" min="1" placeholder="Masa №"
+             class="ultra-modern-input w-24 text-center px-3 py-2 rounded-xl" />
+      <a href="index.html" class="modern-btn bg-red-500 text-white px-4 py-2 rounded-lg">Geri</a>
+    </div>
+  </header>
+
+  <main class="flex-1 grid grid-cols-3 gap-4 p-4 overflow-hidden">
+    <!-- products grid -->
+    <section id="pos-products" class="col-span-2 grid grid-cols-3 gap-3 overflow-y-auto custom-scroll">
+      <!-- JS will populate product cards here -->
+    </section>
+
+    <!-- cart sidebar -->
+    <aside id="pos-cart" class="flex flex-col bg-white rounded-2xl shadow-lg p-4 overflow-y-auto">
+      <h2 class="text-lg font-bold mb-4">Səbət</h2>
+      <div id="pos-cart-items" class="flex-1 space-y-2">
+        <!-- JS will populate cart items here -->
+      </div>
+      <div class="mt-4 border-t pt-3">
+        <div class="flex justify-between font-semibold">
+          <span>Cəmi:</span>
+          <span id="pos-cart-total">0.00 AZN</span>
+        </div>
+        <button id="pos-place-order"
+                class="premium-gradient-btn w-full mt-4 text-white px-4 py-2 rounded-xl disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed"
+                disabled>
+          Sifarişi Göndər
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <script type="module">
+    import { DataService } from './services/dataService.js';
+    import { CartService } from './utils/cartService.js';
+    import { NotificationService } from './utils/notificationService.js';
+    import { createElement, createPOSProductCard, createPOSCartItem } from './components.js'; // Import components
+
+    // Initialize services
+    const cartService = new CartService();
+    const productContainer = document.getElementById('pos-products');
+    const cartItemsContainer = document.getElementById('pos-cart-items');
+    const cartTotalEl = document.getElementById('pos-cart-total');
+    const placeOrderBtn = document.getElementById('pos-place-order');
+    const tableInput = document.getElementById('pos-table-input');
+
+    // Update cart display
+    function updateCartUI() {
+      const items = cartService.getItems();
+      cartItemsContainer.innerHTML = '';
+      
+      if (items.length === 0) {
+        cartItemsContainer.innerHTML = '<p class="text-center text-slate-500 py-4">Səbət boşdur</p>';
+      } else {
+        items.forEach((item, idx) => {
+          cartItemsContainer.appendChild(createPOSCartItem(item, idx));
+        });
+      }
+      
+      const total = cartService.getTotal();
+      cartTotalEl.textContent = `${total.toFixed(2)} AZN`;
+      placeOrderBtn.disabled = !(items.length > 0 && parseInt(tableInput.value) > 0);
+    }
+
+    // Load products
+    async function loadProducts() {
+      try {
+        const products = await DataService.getProducts();
+        productContainer.innerHTML = '';
+        
+        products.forEach(p => {
+          productContainer.appendChild(createPOSProductCard(p));
+        });
+      } catch (error) {
+        console.error('Error loading products:', error);
+        productContainer.innerHTML = '<p class="text-center text-red-500 py-8">Məhsullar yüklənərkən xəta baş verdi</p>';
+      }
+    }
+
+    // Event listeners
+    productContainer.addEventListener('click', (e) => {
+      const card = e.target.closest('.pos-product-card');
+      if (!card) return;
+      
+      const productId = card.dataset.productId;
+      DataService.getProducts().then(products => {
+        const product = products.find(p => p.id === productId);
+        if (product && (product.stock > 0 || product.stock === undefined)) {
+          cartService.addItem(product);
+        } else {
+          NotificationService.show('Məhsul stokda yoxdur', 'warning');
+        }
+      });
+    });
+
+    cartItemsContainer.addEventListener('click', (e) => {
+      const btn = e.target;
+      const index = parseInt(btn.closest('[data-index]')?.dataset.index);
+      if (isNaN(index)) return;
+
+      const action = btn.dataset.action;
+      const items = cartService.getItems();
+      
+      if (action === 'increase') {
+        cartService.updateQuantity(index, items[index].quantity + 1);
+      } else if (action === 'decrease' && items[index].quantity > 1) {
+        cartService.updateQuantity(index, items[index].quantity - 1);
+      } else if (action === 'remove') {
+        cartService.removeItem(index);
+      }
+    });
+
+    placeOrderBtn.addEventListener('click', async () => {
+      const tableNumber = parseInt(tableInput.value);
+      if (!tableNumber) {
+        NotificationService.show('Zəhmət olmasa masa nömrəsini daxil edin', 'error');
+        return;
+      }
+
+      const items = cartService.getItems();
+      if (items.length === 0) {
+        NotificationService.show('Səbət boşdur', 'error');
+        return;
+      }
+
+      const order = {
+        tableNumber,
+        items: items.map(i => ({
+          id: i.id,
+          name: i.name,
+          quantity: i.quantity,
+          priceAtOrder: i.priceAtOrder || i.price
+        })),
+        status: 'pending',
+        orderSource: 'pos'
+      };
+
+      const loading = NotificationService.showLoading('Sifariş göndərilir...');
+      try {
+        const result = await DataService.addOrder(order);
+        if (result) {
+          cartService.clear();
+          tableInput.value = '';
+          NotificationService.show('🎉 Sifariş uğurla göndərildi!', 'success');
+        }
+      } catch (error) {
+        NotificationService.show('Sifariş göndərilərkən xəta baş verdi', 'error');
+      } finally {
+        NotificationService.hideLoading(loading);
+      }
+    });
+
+    cartService.subscribe(updateCartUI);
+    updateCartUI(); // Initial update
+
+    // Load products on page load
+    loadProducts();
+  </script>
+</body>
+</html>

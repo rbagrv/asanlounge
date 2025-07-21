@@ -1,4 +1,5 @@
 import { db } from '../firebase-config.js';
+import { getAuth } from 'firebase/auth';
 import {
   collection,
   getDocs,
@@ -8,7 +9,11 @@ import {
   doc,
   query,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  where,
+  onSnapshot,
+  getDoc,
+  setDoc
 } from 'firebase/firestore';
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '../constants/initialData.js';
 
@@ -112,7 +117,10 @@ export class DataService {
       console.error("Error adding order: ", error);
       // Simulate a successful order in offline mode for better UX
       const total = order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
-      NotificationService.show('Sifarişiniz qəbul edildi (offline rejim).', 'info');
+      // Assuming NotificationService is available globally or handle it differently
+      if (window.NotificationService) {
+        window.NotificationService.show('Sifarişiniz qəbul edildi (offline rejim).', 'info');
+      }
       return { ...order, id: `offline-${Date.now()}`, total };
     }
   }
@@ -128,6 +136,36 @@ export class DataService {
     } catch (error) {
       console.error("Error updating order: ", error);
       return false;
+    }
+  }
+
+  static getOrdersForUser(userId, callback) {
+    const ordersCol = collection(db, 'orders');
+    const q = query(ordersCol, where("userId", "==", userId), orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        callback(orders);
+    }, (error) => {
+        console.error("Error listening to user orders: ", error);
+    });
+
+    return unsubscribe; // Return the unsubscribe function to stop listening
+  }
+
+  static async updateOrderItems(orderId, items) {
+    try {
+        const orderRef = doc(db, 'orders', orderId);
+        const newTotal = items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+        await updateDoc(orderRef, {
+            items: items,
+            total: newTotal,
+            updatedAt: serverTimestamp()
+        });
+        return true;
+    } catch (error) {
+        console.error("Error updating order items:", error);
+        return false;
     }
   }
 
@@ -363,6 +401,50 @@ export class DataService {
     }
   }
 
+  static async getUsers() {
+    try {
+        const usersCol = collection(db, 'users');
+        const userSnapshot = await getDocs(usersCol);
+        return userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+        console.error("Error getting users: ", error);
+        return [];
+    }
+  }
+
+  static async addUser(userData) {
+    try {
+      const docRef = await addDoc(collection(db, 'users'), userData);
+      return { id: docRef.id, ...userData };
+    } catch (error) {
+      console.error("Error adding user to collection: ", error);
+      return null;
+    }
+  }
+
+  static async updateUser(userId, updatedData) {
+    try {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, updatedData);
+      return true;
+    } catch (error) {
+      console.error("Error updating user: ", error);
+      return false;
+    }
+  }
+
+  static async deleteUser(userId) {
+    // Note: This only deletes the user from the 'users' collection, not from Firebase Auth.
+    // Deleting from Auth requires admin privileges, typically on a backend.
+    try {
+      await deleteDoc(doc(db, 'users', userId));
+      return true;
+    } catch (error) {
+      console.error("Error deleting user: ", error);
+      return false;
+    }
+  }
+
   // --- New Data Services for Admin Panel Sections ---
 
   static async getDiscounts() {
@@ -475,6 +557,69 @@ export class DataService {
         return [];
     }
   }
+
+  static async addRecipe(recipeData) {
+    try {
+      const docRef = await addDoc(collection(db, 'recipes'), recipeData);
+      return { id: docRef.id, ...recipeData };
+    } catch (error) {
+      console.error("Error adding recipe: ", error);
+      return null;
+    }
+  }
+
+  static async updateRecipe(recipeId, updatedData) {
+    try {
+      const recipeRef = doc(db, 'recipes', recipeId);
+      await updateDoc(recipeRef, updatedData);
+      return true;
+    } catch (error) {
+      console.error("Error updating recipe: ", error);
+      return false;
+    }
+  }
+
+  static async getSuppliers() {
+    try {
+      const suppliersCol = collection(db, 'suppliers');
+      const snapshot = await getDocs(suppliersCol);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (error) {
+      console.error("Error getting suppliers: ", error);
+      return [];
+    }
+  }
+
+  static async addSupplier(supplierData) {
+    try {
+      const docRef = await addDoc(collection(db, 'suppliers'), supplierData);
+      return { id: docRef.id, ...supplierData };
+    } catch (error) {
+      console.error("Error adding supplier: ", error);
+      return null;
+    }
+  }
+
+  static async updateSupplier(supplierId, updatedData) {
+    try {
+      const supplierRef = doc(db, 'suppliers', supplierId);
+      await updateDoc(supplierRef, updatedData);
+      return true;
+    } catch (error) {
+      console.error("Error updating supplier: ", error);
+      return false;
+    }
+  }
+
+  static async deleteSupplier(supplierId) {
+    try {
+      await deleteDoc(doc(db, 'suppliers', supplierId));
+      return true;
+    } catch (error) {
+      console.error("Error deleting supplier: ", error);
+      return false;
+    }
+  }
   
   static async resetDatabase() {
     const collections = ['products', 'orders', 'tables', 'purchases', 'categories', 'discounts', 'inventory'];
@@ -489,5 +634,53 @@ export class DataService {
     // Re-seed initial data
     await this.getProducts(); // Will re-seed if empty
     await this.getCategories(); // Will re-seed if empty
+  }
+
+  static async getBusinessInfo() {
+    try {
+        const settingsRef = doc(db, 'settings', 'businessInfo');
+        const docSnap = await getDoc(settingsRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            localStorage.setItem('businessInfoCache', JSON.stringify(data));
+            return data;
+        } else {
+            // Return default info if not set
+            const defaultInfo = {
+                businessName: 'Eat & Drink App',
+                address: 'Bakı şəhəri, Nəsimi rayonu',
+                phone: '+994 xx xxx xx xx',
+                socials: {
+                    instagram: '',
+                    facebook: '',
+                    tiktok: ''
+                }
+            };
+            return defaultInfo;
+        }
+    } catch (error) {
+        console.error("Error getting business info:", error);
+        const cachedInfo = localStorage.getItem('businessInfoCache');
+        if (cachedInfo) {
+            try {
+                return JSON.parse(cachedInfo);
+            } catch (e) {
+                console.error("Error parsing cached business info", e);
+            }
+        }
+        return {}; // fallback
+    }
+}
+
+  static async updateBusinessInfo(data) {
+    try {
+        const settingsRef = doc(db, 'settings', 'businessInfo');
+        await setDoc(settingsRef, data, { merge: true });
+        localStorage.setItem('businessInfoCache', JSON.stringify(data));
+        return true;
+    } catch (error) {
+        console.error("Error updating business info:", error);
+        return false;
+    }
   }
 }

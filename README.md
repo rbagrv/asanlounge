@@ -10,14 +10,14 @@ Tətbiqin loqosunu mövcud şəkil fayllarını əvəz edərək və ya admin pan
 
 Loqonuzun tətbiqdə yaxşı görünməsini təmin etmək üçün aşağıdakı təlimatlara əməl edin:
 
-**Əsas Tətbiq Loqosu üçün (`chef-hat.png`):**
+**Əsas Tətbiq Loqosu üçün (`appicon.png`):**
 
 *   **Fayl Formatı**: Şəffaf (transparent) arxa fona malik `PNG` formatı tövsiyə olunur. Ölçülənə bilən keyfiyyət üçün `SVG` formatından da istifadə edə bilərsiniz.
 *   **Tərəflərin Nisbəti**: Kvadrat (1:1).
 *   **Ölçülər**: Yaxşı keyfiyyət üçün minimum `256x256` piksel tövsiyə olunur. `512x512` piksel kimi daha yüksək ayırdetmə daha yaxşıdır.
 *   **Stil**: Sadə, müasir və flat dizayn ən yaxşı nəticəni verir. Loqo kiçik ölçülərdə belə asanlıqla tanınmalıdır.
 *   **Rəng**: Loqo həm açıq, həm də tünd arxa fonlarda aydın görünməlidir. Tək rəngli (məsələn, ağ və ya tünd rəng) loqolar adətən effektiv olur.
-*   **Fayl Adı**: Standart loqonu dəyişmək üçün faylınızı `chef-hat.png` adlandırıb əsas qovluqda yerləşdirin.
+*   **Fayl Adı**: Standart loqonu dəyişmək üçün faylınızı `appicon.png` adlandırıb `assets/` qovluğunda yerləşdirin.
 
 **Favicon üçün (`favicon.ico`):**
 
