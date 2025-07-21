@@ -147,7 +147,7 @@ export const createProductCard = (product, actions = true) => {
         addButton.innerHTML = `
             <span class="flex items-center justify-center space-x-2">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l2.5 5M9.99 17.93"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l2.5 5M9.99 17.93l3.76 1.83"></path>
                 </svg>
                 <span>Səbətə əlavə et</span>
             </span>
@@ -181,14 +181,14 @@ export const createAdminProductForm = (product = null, categories = []) => {
             <div>
                 <label for="name" class="block text-sm font-bold text-slate-700 mb-3">Məhsul adı</label>
                 <input type="text" id="name" name="name" value="${product ? product.name : ''}" required
-                       class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base"
+                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
                        placeholder="Məs. Burger">
             </div>
             
             <div>
                 <label for="price" class="block text-sm font-bold text-slate-700 mb-3">Qiymət (AZN)</label>
                 <input type="number" id="price" name="price" step="0.01" value="${product ? product.price : ''}" required
-                       class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base"
+                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
                        placeholder="0.00">
             </div>
         </div>
@@ -196,7 +196,7 @@ export const createAdminProductForm = (product = null, categories = []) => {
         <div>
             <label for="description" class="block text-sm font-bold text-slate-700 mb-3">Təsvir</label>
             <textarea id="description" name="description" required rows="4"
-                      class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base resize-none"
+                      class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200 resize-none"
                       placeholder="Məhsul haqqında məlumat...">${product ? product.description : ''}</textarea>
         </div>
         
@@ -204,14 +204,14 @@ export const createAdminProductForm = (product = null, categories = []) => {
             <div>
                 <label for="imageUrl" class="block text-sm font-bold text-slate-700 mb-3">Şəkil URL</label>
                 <input type="text" id="imageUrl" name="imageUrl" value="${product ? product.imageUrl : ''}" required
-                       class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base"
+                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
                        placeholder="https://...">
             </div>
             
             <div>
                 <label for="category" class="block text-sm font-bold text-slate-700 mb-3">Kateqoriya</label>
                 <select id="category" name="category" required
-                        class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base">
+                        class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200">
                     <option value="">Kateqoriya seçin</option>
                     ${categories.map(cat => `
                         <option value="${cat.name}" ${product && product.category === cat.name ? 'selected' : ''}>${cat.name}</option>
@@ -224,14 +224,14 @@ export const createAdminProductForm = (product = null, categories = []) => {
             <div>
                 <label for="discountPercentage" class="block text-sm font-bold text-slate-700 mb-3">Endirim (%)</label>
                 <input type="number" id="discountPercentage" name="discountPercentage" min="0" max="100" value="${product ? product.discountPercentage : 0}"
-                       class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base"
+                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
                        placeholder="0">
             </div>
             
             <div>
                 <label for="stock" class="block text-sm font-bold text-slate-700 mb-3">Stok Miqdarı</label>
                 <input type="number" id="stock" name="stock" min="0" value="${product ? product.stock : 0}" required
-                       class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base"
+                       class="w-full px-4 py-3 rounded-xl focus:outline-none transition-all duration-200"
                        placeholder="0">
             </div>
         </div>
@@ -244,10 +244,10 @@ export const createAdminProductForm = (product = null, categories = []) => {
         
         <div class="flex space-x-4 pt-4">
             <button type="submit" 
-                    class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-rotate-1">
+                    class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                 <span class="flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m8-8H4"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
                     </svg>
                     <span>${product ? 'Yenilə' : 'Əlavə et'}</span>
                 </span>
@@ -255,45 +255,6 @@ export const createAdminProductForm = (product = null, categories = []) => {
         </div>
     `;
     return form;
-};
-
-export const createProductRow = (product) => {
-    const row = createElement('tr', {
-        className: 'bg-white border-b hover:bg-slate-50'
-    });
-
-    const price = product.discountPercentage > 0 
-        ? (product.price * (1 - product.discountPercentage / 100)) 
-        : product.price;
-
-    row.innerHTML = `
-        <td class="px-6 py-4">
-            <img src="${product.imageUrl || 'https://placehold.co/50x50/e0f2fe/0284c7?text=No+Image'}" alt="${product.name}" 
-                 class="w-12 h-12 object-cover rounded-md shadow-sm"
-                 onerror="this.src='https://placehold.co/50x50/e0f2fe/0284c7?text=No+Image';">
-        </td>
-        <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">${product.name}</td>
-        <td class="px-6 py-4">${product.category || 'Naməlum'}</td>
-        <td class="px-6 py-4">
-            ${product.discountPercentage > 0 ? `<span class="line-through text-slate-400 text-sm mr-1">${product.price.toFixed(2)}</span>` : ''}
-            <span class="font-semibold text-slate-800">${price.toFixed(2)} AZN</span>
-        </td>
-        <td class="px-6 py-4">${product.stock !== undefined ? product.stock : 'N/A'}</td>
-        <td class="px-6 py-4">
-            ${product.discountPercentage > 0 ? `<span class="px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-xs font-semibold">-${product.discountPercentage}%</span>` : 'Yox'}
-        </td>
-        <td class="px-6 py-4">
-            <div class="flex space-x-2">
-                <button class="edit-product-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-blue-600 transition" data-product-id="${product.id}">
-                    Redaktə
-                </button>
-                <button class="delete-product-btn bg-red-500 text-white px-3 py-2 rounded-lg text-xs hover:bg-red-600 transition" data-product-id="${product.id}">
-                    Sil
-                </button>
-            </div>
-        </td>
-    `;
-    return row;
 };
 
 export const createOrderCard = (order) => {
@@ -342,229 +303,511 @@ export const createOrderCard = (order) => {
     return card;
 };
 
+export const createTableCard = (table) => {
+    const card = createElement('div', { 
+        className: `bg-white rounded-2xl shadow-lg p-6 card-hover ${table.isOccupied ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500'}`, 
+        dataset: { tableId: table.id } 
+    });
+    
+    card.innerHTML = `
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-gray-800">Masa ${table.number}</h3>
+            <span class="px-3 py-1 rounded-full text-sm font-semibold ${table.isOccupied ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                ${table.isOccupied ? 'Məişğul' : 'Boş'}
+            </span>
+        </div>
+        <p class="text-gray-600 mb-4">Tutum: ${table.capacity} nəfər</p>
+        <div class="flex space-x-2">
+            <button class="flex-1 bg-blue-500 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-600 transition qr-code-btn" data-table-id="${table.id}">
+                QR Kod
+            </button>
+            <button class="flex-1 bg-gray-500 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-600 transition edit-table-btn" data-table-id="${table.id}">
+                Redaktə
+            </button>
+        </div>
+    `;
+    
+    return card;
+};
+
 export const createAnalyticsCard = (title, value, subtitle = '', color = 'blue') => {
     const card = createElement('div', { className: 'admin-stat-card p-6' });
     
     const iconMap = {
         'blue': `<svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>`,
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                 </svg>`,
         'green': `<svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>`,
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                   </svg>`,
         'purple': `<svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9a6 6 0 00-6 6v2a4 4 0 01-4 4 4 4 0 01-4-4v-2a4 4 0 014-4 4 4 0 014 4v2a4 4 0 01-4 4 4 4 0 01-4-4v-2H6v2a4 4 0 01-4 4 4 4 0 01-4-4v-2H6v2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                    </svg>`,
         'orange': `<svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m8-8H4"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                    </svg>`
     };
-
+    
     card.innerHTML = `
-        <div class="flex items-center mb-4">
-            <div class="p-2 mr-3 rounded-full bg-${color}-100">
-                ${iconMap[color] || iconMap.blue}
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <div class="flex items-center space-x-3 mb-2">
+                    ${iconMap[color] || iconMap['blue']}
+                    <h3 class="text-sm font-bold text-slate-600 uppercase tracking-wide">${title}</h3>
+                </div>
+                <p class="text-3xl font-bold bg-gradient-to-r from-${color}-500 to-${color}-600 bg-clip-text text-transparent">${value}</p>
+                ${subtitle ? `<p class="text-sm text-slate-500 mt-1">${subtitle}</p>` : ''}
             </div>
-            <div>
-                <p class="text-sm font-medium text-slate-500">${title}</p>
-                <h3 class="text-2xl font-bold text-slate-800">${value}</h3>
-                ${subtitle ? `<p class="text-xs text-slate-400">${subtitle}</p>` : ''}
+            <div class="w-12 h-12 bg-gradient-to-br from-${color}-100 to-${color}-200 rounded-full flex items-center justify-center">
+                ${iconMap[color] || iconMap['blue']}
             </div>
         </div>
     `;
+    
     return card;
 };
 
-export const createTableForm = (table = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${table ? 'Masanı Redaktə Et' : 'Yeni Masa Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+export const createKitchenOrderCard = (order) => {
+    const card = createElement('div', { 
+        className: `kitchen-card p-4 sm:p-5 ${StatusUtils.getKitchenStatusBorder(order.status)} hover:shadow-2xl transition-all duration-400`, 
+        dataset: { 
+            orderId: order.id,
+            timestamp: JSON.stringify(order.createdAt),
+            tableNumber: order.tableNumber
+        } 
+    });
+    
+    let timeElapsed = '...';
+    let urgencyClass = 'text-green-500';
+    
+    if (order.createdAt && order.createdAt.seconds) {
+        const orderTimestamp = new Date(order.createdAt.seconds * 1000 + (order.createdAt.nanoseconds / 1000000));
+        timeElapsed = Math.floor((new Date() - orderTimestamp) / 1000 / 60);
+        
+        if (timeElapsed > 15) {
+            urgencyClass = 'text-red-500 animate-pulse';
+            card.classList.add('urgent');
+        } else if (timeElapsed > 10) {
+            urgencyClass = 'text-amber-500';
+        }
+    }
+    
+    card.innerHTML = `
+        <div class="flex flex-col sm:flex-row justify-between items-start mb-4 sm:mb-5 space-y-2 sm:space-y-0">
+            <div class="space-y-1">
+                <h3 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Masa ${order.tableNumber}</h3>
+                <p class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full inline-block">Sifariş #${order.id.substring(0, 6)}</p>
+            </div>
+            <div class="flex items-center space-x-2 bg-white/60 backdrop-blur-sm px-3 py-2 rounded-full">
+                <svg class="order-timer-icon w-4 h-4 ${urgencyClass}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="order-timer text-sm font-bold ${urgencyClass}">${timeElapsed} dəqiqə</p>
+            </div>
+        </div>
+        
+        <div class="space-y-2 mb-4 sm:mb-5">
+            ${order.items.map(item => `
+                <div class="flex justify-between items-center p-3 bg-gradient-to-r from-slate-50 to-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <span class="font-semibold text-slate-700 text-sm">${item.name}</span>
+                    <span class="bg-gradient-to-r from-primary-500 to-accent-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">×${item.quantity}</span>
+                </div>
+            `).join('')}
+        </div>
+        
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+            ${order.status === 'pending' ? `
+                <button class="flex-1 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-white px-3 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 kitchen-status-btn text-sm" data-status="in-prep">
+                    <span class="flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6a2 2 0 00-2 2m0 0V9a2 2 0 002 2h2a2 2 0 002-2m0 0h2m6-4h4m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4m6-4h2m6 0h4"></path>
+                        </svg>
+                        <span>Hazırlamaya başla</span>
+                    </span>
+                </button>
+            ` : ''}
+            ${order.status === 'in-prep' ? `
+                <button class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-3 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 kitchen-status-btn text-sm" data-status="ready">
+                    <span class="flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Hazırdır</span>
+                    </span>
+                </button>
+            ` : ''}
+            ${order.status === 'ready' ? `
+                <div class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-3 rounded-xl font-semibold shadow-lg text-center text-sm flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Servisə hazır</span>
+                </div>
+            ` : ''}
+        </div>
+    `;
+    
+    return card;
 };
 
 export const createDiscountForm = (discount = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${discount ? 'Endirimi Redaktə Et' : 'Yeni Endirim Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+    const form = createElement('form', {
+        id: discount ? `edit-discount-form-${discount.id}` : 'add-discount-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${discount ? discount.id : ''}">
+        <div>
+            <label for="discountName" class="block text-sm font-bold text-slate-700 mb-2">Endirim adı</label>
+            <input type="text" id="discountName" name="name" value="${discount ? discount.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Yay Endirimi">
+        </div>
+        <div>
+            <label for="discountDescription" class="block text-sm font-bold text-slate-700 mb-2">Təsvir</label>
+            <textarea id="discountDescription" name="description" rows="3" class="ultra-modern-input w-full px-4 py-3 resize-none" placeholder="Endirim haqqında qısa məlumat...">${discount ? discount.description : ''}</textarea>
+        </div>
+        <div>
+            <label for="discountPercentage" class="block text-sm font-bold text-slate-700 mb-2">Endirim Faizi (%)</label>
+            <input type="number" id="discountPercentage" name="percentage" min="0" max="100" value="${discount ? discount.percentage : 0}" required class="ultra-modern-input w-full px-4 py-3" placeholder="0">
+        </div>
+        <div class="flex items-center space-x-2">
+            <input type="checkbox" id="discountIsActive" name="isActive" ${discount === null || discount.isActive ? 'checked' : ''}
+                   class="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 focus:ring-2">
+            <label for="discountIsActive" class="text-sm font-bold text-slate-700">Aktivdir</label>
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${discount ? 'Endirimi Yenilə' : 'Endirim Əlavə Et'}</button>
+    `;
+    return form;
+};
+
+export const createTableForm = (table = null) => {
+    const form = createElement('form', {
+        id: table ? `edit-table-form-${table.id}` : 'add-table-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${table ? table.id : ''}">
+        <div>
+            <label for="tableNumber" class="block text-sm font-bold text-slate-700 mb-2">Masa Nömrəsi</label>
+            <input type="number" id="tableNumber" name="number" value="${table ? table.number : ''}" required min="1" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. 5">
+        </div>
+        <div>
+            <label for="tableCapacity" class="block text-sm font-bold text-slate-700 mb-2">Tutum (nəfər)</label>
+            <input type="number" id="tableCapacity" name="capacity" value="${table ? table.capacity : ''}" required min="1" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. 4">
+        </div>
+        <div class="flex items-center space-x-2">
+            <input type="checkbox" id="tableIsOccupied" name="isOccupied" ${table && table.isOccupied ? 'checked' : ''}
+                   class="w-5 h-5 text-primary-600 rounded focus:ring-primary-500 focus:ring-2">
+            <label for="tableIsOccupied" class="text-sm font-bold text-slate-700">Məşğuldur</label>
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${table ? 'Masayı Yenilə' : 'Masa Əlavə Et'}</button>
+    `;
+    return form;
 };
 
 export const createInventoryItemForm = (item = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${item ? 'Anbar Məhsulunu Redaktə Et' : 'Yeni Anbar Məhsulu Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+    const form = createElement('form', {
+        id: item ? `edit-inventory-item-form-${item.id}` : 'add-inventory-item-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${item ? item.id : ''}">
+        <div>
+            <label for="itemName" class="block text-sm font-bold text-slate-700 mb-2">Məhsul adı</label>
+            <input type="text" id="itemName" name="name" value="${item ? item.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Pomidor">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="itemQuantity" class="block text-sm font-bold text-slate-700 mb-2">Miqdar</label>
+                <input type="number" id="itemQuantity" name="quantity" value="${item ? item.quantity : 0}" required min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="0">
+            </div>
+            <div>
+                <label for="itemUnit" class="block text-sm font-bold text-slate-700 mb-2">Vahid</label>
+                <input type="text" id="itemUnit" name="unit" value="${item ? item.unit : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. kq, litr, ədəd">
+            </div>
+        </div>
+        <div>
+            <label for="lowStockThreshold" class="block text-sm font-bold text-slate-700 mb-2">Minimum Stok Həddi</label>
+            <input type="number" id="lowStockThreshold" name="lowStockThreshold" value="${item ? item.lowStockThreshold : 0}" min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="10">
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${item ? 'Məhsulu Yenilə' : 'Məhsul Əlavə Et'}</button>
+    `;
+    return form;
 };
 
 export const createPurchaseForm = (purchase = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${purchase ? 'Alışı Redaktə Et' : 'Yeni Alış Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+    const form = createElement('form', {
+        id: purchase ? `edit-purchase-form-${purchase.id}` : 'add-purchase-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${purchase ? purchase.id : ''}">
+        <div>
+            <label for="purchaseItemName" class="block text-sm font-bold text-slate-700 mb-2">Məhsul adı</label>
+            <input type="text" id="purchaseItemName" name="itemName" value="${purchase ? purchase.itemName : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Un">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label for="purchaseQuantity" class="block text-sm font-bold text-slate-700 mb-2">Miqdar</label>
+                <input type="number" id="purchaseQuantity" name="quantity" value="${purchase ? purchase.quantity : 0}" required min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="0">
+            </div>
+            <div>
+                <label for="purchaseUnitCost" class="block text-sm font-bold text-slate-700 mb-2">Vahid Qiyməti (AZN)</label>
+                <input type="number" id="purchaseUnitCost" name="unitCost" value="${purchase ? purchase.unitCost : 0}" required min="0" step="0.01" class="ultra-modern-input w-full px-4 py-3" placeholder="0.00">
+            </div>
+        </div>
+        <div>
+            <label for="purchaseSupplier" class="block text-sm font-bold text-slate-700 mb-2">Təchizatçı</label>
+            <input type="text" id="purchaseSupplier" name="supplier" value="${purchase ? purchase.supplier : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Market X">
+        </div>
+        <div>
+            <label for="purchaseNotes" class="block text-sm font-bold text-slate-700 mb-2">Qeydlər</label>
+            <textarea id="purchaseNotes" name="notes" rows="3" class="ultra-modern-input w-full px-4 py-3 resize-none" placeholder="Əlavə qeydlər...">${purchase ? purchase.notes : ''}</textarea>
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${purchase ? 'Alışı Yenilə' : 'Alış Əlavə Et'}</button>
+    `;
+    return form;
 };
 
 export const createEmployeeForm = (employee = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${employee ? 'İşçini Redaktə Et' : 'Yeni İşçi Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+    const form = createElement('form', {
+        id: employee ? `edit-employee-form-${employee.id}` : 'add-employee-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${employee ? employee.id : ''}">
+        <div>
+            <label for="employeeEmail" class="block text-sm font-bold text-slate-700 mb-2">Email</label>
+            <input type="email" id="employeeEmail" name="email" value="${employee ? employee.email : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="işçi@restoran.com">
+        </div>
+        <div>
+            <label for="employeePassword" class="block text-sm font-bold text-slate-700 mb-2">Şifrə</label>
+            <input type="password" id="employeePassword" name="password" ${employee ? '' : 'required'} class="ultra-modern-input w-full px-4 py-3" placeholder="${employee ? 'Dəyişmək üçün yeni şifrə daxil edin' : '••••••••'}">
+        </div>
+        <div>
+            <label for="employeeRole" class="block text-sm font-bold text-slate-700 mb-2">Rol</label>
+            <select id="employeeRole" name="role" required class="ultra-modern-input w-full px-4 py-3">
+                <option value="">Rol seçin</option>
+                <option value="waiter" ${employee && employee.role === 'waiter' ? 'selected' : ''}>Ofisant</option>
+                <option value="cashier" ${employee && employee.role === 'cashier' ? 'selected' : ''}>Kassir</option>
+                <option value="manager" ${employee && employee.role === 'manager' ? 'selected' : ''}>Menecer</option>
+                <option value="admin" ${employee && employee.role === 'admin' ? 'selected' : ''}>Admin</option>
+            </select>
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${employee ? 'İşçini Yenilə' : 'İşçi Əlavə Et'}</button>
+    `;
+    return form;
 };
 
 export const createCategoryForm = (category = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${category ? 'Kateqoriyanı Redaktə Et' : 'Yeni Kateqoriya Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+    const form = createElement('form', {
+        id: category ? `edit-category-form-${category.id}` : 'add-category-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${category ? category.id : ''}">
+        <div>
+            <label for="categoryName" class="block text-sm font-bold text-slate-700 mb-2">Kateqoriya adı</label>
+            <input type="text" id="categoryName" name="name" value="${category ? category.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Səhər Yeməkləri">
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${category ? 'Kateqoriyanı Yenilə' : 'Kateqoriya Əlavə Et'}</button>
+    `;
+    return form;
 };
 
-export const createRecipeForm = (recipe = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${recipe ? 'Resepti Redaktə Et' : 'Yeni Resept Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
+export const createRecipeForm = (recipe = null, products = [], inventoryItems = []) => {
+    const form = createElement('form', {
+        id: recipe ? `edit-recipe-form-${recipe.id}` : 'add-recipe-form',
+        className: 'modern-form p-6 space-y-4'
+    });
+
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${recipe ? recipe.id : ''}">
+        <div>
+            <label for="recipeProductId" class="block text-sm font-bold text-slate-700 mb-2">Məhsul</label>
+            <select id="recipeProductId" name="productId" required class="ultra-modern-input w-full px-4 py-3">
+                <option value="">Məhsul seçin</option>
+                ${products.map(p => `<option value="${p.id}" ${recipe && recipe.productId === p.id ? 'selected' : ''}>${p.name}</option>`).join('')}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">Tərkibi</label>
+            <div id="ingredients-container" class="space-y-2">
+                <!-- Ingredient rows will be added here -->
+            </div>
+            <button type="button" id="add-ingredient-btn" class="mt-2 text-sm text-primary-600 hover:text-primary-800 font-semibold">+ Tərkib əlavə et</button>
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${recipe ? 'Resepti Yenilə' : 'Resept Əlavə Et'}</button>
+    `;
+    return form;
 };
 
 export const createSupplierForm = (supplier = null) => {
-    return createElement('div', { className: 'ultra-modern-card p-6' }, `
-        <h3 class="text-xl font-bold text-slate-800 mb-4">${supplier ? 'Təchizatçını Redaktə Et' : 'Yeni Təchizatçı Əlavə Et'}</h3>
-        <p class="text-slate-600">Bu hissə hazırlanır. Zəhmət olmasa gözləyin.</p>
-        <button type="button" class="mt-4 bg-primary-500 text-white px-4 py-2 rounded-lg close-placeholder-modal">Bağla</button>
-    `);
-};
-
-export const createPOSOrderListItem = (order, isSelected = false) => {
-    const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
-    const orderTime = order.createdAt ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-    
-    const item = createElement('div', {
-        className: `pos-order-list-item flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors duration-200 
-                    ${isSelected ? 'bg-blue-100 border border-blue-400 shadow-md' : 'bg-slate-50 hover:bg-slate-100'}`,
-        dataset: { orderId: order.id }
+    const form = createElement('form', {
+        id: supplier ? `edit-supplier-form-${supplier.id}` : 'add-supplier-form',
+        className: 'modern-form p-6 space-y-4'
     });
 
-    item.innerHTML = `
+    form.innerHTML = `
+        <input type="hidden" name="id" value="${supplier ? supplier.id : ''}">
         <div>
-            <p class="font-semibold text-slate-800">Masa ${order.tableNumber} <span class="text-slate-500 text-xs ml-1">#${order.id.substring(0, 6)}</span></p>
-            <p class="text-sm text-slate-600">${totalItems} məhsul · ${order.total?.toFixed(2) || '0.00'} AZN</p>
+            <label for="supplierName" class="block text-sm font-bold text-slate-700 mb-2">Təchizatçı Adı</label>
+            <input type="text" name="name" value="${supplier ? supplier.name : ''}" required class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. ABC Qida">
         </div>
-        <div class="text-right">
-            <span class="text-xs text-slate-500">${orderTime}</span>
-            <span class="block px-2 py-0.5 rounded-full text-xs font-semibold ${StatusUtils.getStatusColor(order.status)} mt-1">
-                ${StatusUtils.getStatusText(order.status)}
-            </span>
+        <div>
+            <label for="contactPerson" class="block text-sm font-bold text-slate-700 mb-2">Əlaqədar şəxs</label>
+            <input type="text" name="contactPerson" value="${supplier ? supplier.contactPerson : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="Məs. Əli Vəliyev">
         </div>
+        <div>
+            <label for="supplierPhone" class="block text-sm font-bold text-slate-700 mb-2">Telefon</label>
+            <input type="tel" name="phone" value="${supplier ? supplier.phone : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="+994...">
+        </div>
+         <div>
+            <label for="supplierEmail" class="block text-sm font-bold text-slate-700 mb-2">Email</label>
+            <input type="email" name="email" value="${supplier ? supplier.email : ''}" class="ultra-modern-input w-full px-4 py-3" placeholder="contact@supplier.com">
+        </div>
+        <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">${supplier ? 'Təchizatçını Yenilə' : 'Təchizatçı Əlavə Et'}</button>
     `;
-    return item;
+    return form;
 };
 
 export const createUserCard = (user) => {
-    return createElement('div', { className: 'ultra-modern-card p-4 flex flex-col items-center text-center' }, `
-        <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
-            <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m8-8H4"></path></svg>
+    const card = createElement('div', {
+        className: 'ultra-modern-card p-5 text-center',
+        dataset: { userId: user.id }
+    });
+
+    const roleColorMap = {
+        admin: 'bg-red-100 text-red-800',
+        manager: 'bg-purple-100 text-purple-800',
+        cashier: 'bg-blue-100 text-blue-800',
+        waiter: 'bg-green-100 text-green-800',
+        guest: 'bg-slate-100 text-slate-800',
+        'guest-anonymous': 'bg-gray-100 text-gray-800',
+    };
+
+    const registrationDate = user.createdAt && user.createdAt.seconds
+        ? new Date(user.createdAt.seconds * 1000).toLocaleDateString()
+        : 'Naməlum';
+    
+    const roleText = (user.role || 'guest').replace('guest-anonymous', 'Anonim Qonaq');
+
+    card.innerHTML = `
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-primary-200 to-accent-200 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         </div>
-        <h4 class="font-semibold text-slate-800">${user.email}</h4>
-        <p class="text-sm text-slate-600 capitalize">${user.role || 'user'}</p>
-        <div class="mt-3 flex space-x-2">
-            <button class="bg-blue-500 text-white px-3 py-1 rounded-lg text-xs">Redaktə</button>
-            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs">Sil</button>
+        <h4 class="font-bold text-slate-800 truncate" title="${user.email}">${user.email}</h4>
+        <div class="mt-2 mb-3">
+            <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize ${roleColorMap[user.role] || roleColorMap.guest}">
+                ${roleText}
+            </span>
         </div>
-    `);
+        <p class="text-xs text-slate-500">Qeydiyyat: ${registrationDate}</p>
+    `;
+
+    return card;
 };
 
 export const createSalesTableRow = (order) => {
-    const row = createElement('tr', { className: 'bg-white border-b hover:bg-slate-50' });
-    const orderDate = order.createdAt && order.createdAt.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleDateString() : 'N/A';
-    const totalItems = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
-    const totalAmount = order.total !== undefined ? order.total.toFixed(2) : '0.00';
+    const row = createElement('tr', {
+        className: 'bg-white border-b hover:bg-slate-50'
+    });
+
+    const total = order.total || order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+    const date = order.createdAt && order.createdAt.seconds 
+        ? new Date(order.createdAt.seconds * 1000).toLocaleString('az-AZ')
+        : '---';
 
     row.innerHTML = `
-        <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">${order.id?.substring(0, 8) || 'N/A'}</td>
-        <td class="px-6 py-4">${order.tableNumber || 'N/A'}</td>
-        <td class="px-6 py-4">${orderDate}</td>
-        <td class="px-6 py-4">${totalItems}</td>
-        <td class="px-6 py-4 font-semibold">${totalAmount} AZN</td>
+        <td class="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">#${order.id.substring(0, 8)}</td>
+        <td class="px-6 py-4">${order.tableNumber}</td>
+        <td class="px-6 py-4">${date}</td>
+        <td class="px-6 py-4">${order.items.length}</td>
+        <td class="px-6 py-4 font-bold text-green-600">${total.toFixed(2)} AZN</td>
     `;
     return row;
 };
 
+export const createPOSOrderListItem = (order, isSelected) => {
+    const total = order.total || order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
+    const timeText = order.createdAt && order.createdAt.seconds 
+        ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString('az-AZ', { hour: '2-digit', minute: '2-digit' })
+        : '---';
+
+    const statusClass = StatusUtils.getKitchenStatusBadgeColor(order.status);
+    const selectedClass = isSelected ? 'border-primary-500 ring-2 ring-primary-300 shadow-lg scale-105' : 'border-slate-200';
+
+    return createElement('div', {
+        className: `pos-order-list-item ultra-modern-card p-3 cursor-pointer transition-all duration-200 ${selectedClass}`,
+        dataset: { orderId: order.id }
+    }, [
+        createElement('div', { className: 'flex justify-between items-center mb-2' }, [
+            createElement('h4', { className: 'font-bold text-base text-slate-800' }, `Masa ${order.tableNumber}`),
+            createElement('span', { className: `px-2 py-0.5 rounded-full text-xs font-semibold ${statusClass}` }, StatusUtils.getStatusText(order.status))
+        ]),
+        createElement('div', { className: 'flex justify-between items-center text-sm' }, [
+            createElement('p', { className: 'text-slate-600' }, `${order.items.length} məhsul`),
+            createElement('p', { className: 'font-bold text-primary-700' }, `${total.toFixed(2)} AZN`)
+        ]),
+        createElement('p', { className: 'text-xs text-slate-500 mt-1 text-right' }, `Sifariş: ${timeText}`)
+    ]);
+};
+
 export const createPOSProductCard = (product) => {
+    const price = product.discountPercentage > 0 
+        ? (product.price * (1 - product.discountPercentage / 100)) 
+        : product.price;
+
+    const stock = product.stock !== undefined ? product.stock : 99;
+    const outOfStock = stock <= 0;
+
     const card = createElement('div', {
-        className: `pos-product-card p-3 flex flex-col justify-end relative h-32 sm:h-40 ${product.stock <= 0 ? 'out-of-stock' : ''}`,
+        className: `pos-product-card group ${outOfStock ? 'out-of-stock' : ''}`,
         dataset: { productId: product.id }
     });
 
-    const img = createElement('img', {
-        src: product.imageUrl,
-        alt: product.name,
-        className: 'absolute inset-0 w-full h-full object-cover rounded-md',
-        onerror: `this.src='https://placehold.co/150x150/e0f2fe/0284c7?text=No+Image'`
-    });
-    card.appendChild(img);
-
-    const overlay = createElement('div', {
-        className: 'absolute inset-0 bg-gradient-to-t from-black/70 to-transparent rounded-md'
-    });
-    card.appendChild(overlay);
-
-    const name = createElement('span', {
-        className: 'product-name text-white text-sm font-semibold relative z-10'
-    }, [product.name]);
-    card.appendChild(name);
-
-    const price = product.discountPercentage > 0
-        ? (product.price * (1 - product.discountPercentage / 100)).toFixed(2)
-        : product.price.toFixed(2);
-
-    const priceTag = createElement('span', {
-        className: 'product-price absolute z-10'
-    }, [`${price} AZN`]);
-    card.appendChild(priceTag);
-
-    if (product.stock <= 0) {
-        const stockOverlay = createElement('div', {
-            className: 'absolute inset-0 bg-red-500/70 flex items-center justify-center rounded-md z-20'
-        });
-        const stockText = createElement('span', {
-            className: 'text-white text-base font-bold rotate-45'
-        }, ['Stokda yoxdur']);
-        stockOverlay.appendChild(stockText);
-        card.appendChild(stockOverlay);
-    }
+    card.innerHTML = `
+        <div class="relative w-full aspect-square overflow-hidden rounded-xl shadow-inner">
+            <img src="${product.imageUrl || 'https://placehold.co/200x200/e0f2fe/0284c7?text=No+Image'}" 
+                 alt="${product.name}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            ${outOfStock ? `<div class="absolute inset-0 bg-white/70 flex items-center justify-center"><span class="font-bold text-red-500">Stokda yoxdur</span></div>` : ''}
+        </div>
+        <h4 class="product-name font-semibold text-xs text-white absolute bottom-2 left-2 right-2 truncate px-1">${product.name}</h4>
+        <span class="product-price absolute top-1.5 right-1.5 bg-primary-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-md">${price.toFixed(2)}</span>
+    `;
     
+    card.querySelector('img').onerror = function() {
+        this.src = 'https://placehold.co/200x200/e0f2fe/0284c7?text=No+Image';
+    };
+
     return card;
 };
 
 export const createPOSCartItem = (item, index) => {
-    const itemDiv = createElement('div', {
-        className: 'pos-cart-item flex items-center justify-between bg-slate-50 p-3 rounded-lg shadow-sm',
+    const itemEl = createElement('div', {
+        className: 'pos-cart-item flex items-center p-2 rounded-lg hover:bg-slate-100 transition-colors',
         dataset: { index: index }
     });
 
-    itemDiv.innerHTML = `
-        <div class="flex-1">
-            <p class="font-semibold text-slate-800">${item.name}</p>
-            <p class="text-sm text-slate-500">${item.priceAtOrder.toFixed(2)} AZN / ədəd</p>
+    itemEl.innerHTML = `
+        <div class="flex-1 pr-2">
+            <p class="font-semibold text-sm text-slate-800 leading-tight line-clamp-1">${item.name}</p>
+            <p class="text-xs text-slate-500">${item.priceAtOrder.toFixed(2)} AZN</p>
         </div>
-        <div class="flex items-center">
-            <button class="cart-quantity-btn" data-action="decrease">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-            </button>
-            <input type="number" value="${item.quantity}" min="1" class="w-12 text-center bg-transparent border-none focus:outline-none font-semibold text-slate-800 text-base">
-            <button class="cart-quantity-btn" data-action="increase">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            </button>
-            <span class="font-bold text-slate-800 ml-3 mr-1 w-20 text-right">${(item.priceAtOrder * item.quantity).toFixed(2)} AZN</span>
-            <button class="cart-remove-btn" data-action="remove">
-                &times;
-            </button>
+        <div class="flex items-center space-x-1">
+            <button class="cart-quantity-btn" data-action="decrease">-</button>
+            <input type="number" value="${item.quantity}" min="1" class="w-8 text-center text-sm font-semibold bg-transparent focus:outline-none">
+            <button class="cart-quantity-btn" data-action="increase">+</button>
         </div>
+        <p class="w-16 text-right font-bold text-sm text-primary-700">${(item.priceAtOrder * item.quantity).toFixed(2)}</p>
+        <button class="cart-remove-btn" data-action="remove">&times;</button>
     `;
-    return itemDiv;
+
+    return itemEl;
 };

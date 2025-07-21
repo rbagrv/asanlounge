@@ -1,4 +1,4 @@
-import { createElement, createAnalyticsCard, createProductCard, createAdminProductForm, createOrderCard, createTableCard, createTableForm, createDiscountForm, createInventoryItemForm, createPurchaseForm, createEmployeeForm, createCategoryForm, createRecipeForm, createSupplierForm, createPOSOrderListItem, createUserCard, createSalesTableRow, createPOSProductCard, createPOSCartItem, createProductRow } from './components.js';
+import { createElement, createAnalyticsCard, createProductCard, createAdminProductForm, createOrderCard, createTableCard, createTableForm, createDiscountForm, createInventoryItemForm, createPurchaseForm, createEmployeeForm, createCategoryForm, createRecipeForm, createSupplierForm, createPOSOrderListItem, createUserCard, createSalesTableRow, createPOSProductCard, createPOSCartItem } from './components.js';
 import { DataService } from './services/dataService.js';
 import { NotificationService } from './utils/notificationService.js';
 import { CartService } from './utils/cartService.js';
@@ -24,11 +24,11 @@ let currentTabCleanup = null; // To store the cleanup function for the active ta
 
 // --- Menu Configuration ---
 const MENU_ITEMS = {
-    dashboard: { text: 'Göstərici Lövhə', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 00-2-2v-6a2 2 0 002-2H9a2 2 0 002 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
-    pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 00-2-2v-6a2 2 0 002-2H9a2 2 0 002 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
+    dashboard: { text: 'Göstərici Lövhə', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
+    pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>` },
     kitchen: { text: 'Mətbəx', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 01-1.806.547M8 4h8l-1 1v5.172a2 2 0 01-5.356-1.857M8 4h2m0 0l-2.5 5M8 4l2.5 5m6.5-5l2.5 5"></path></svg>` },
     orders: { text: 'Sifarişlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-6-4v10m6-10v10m6-10v10M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
-    sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
+    sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1m8-10a3 3 0 01-3-3V7a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
     products: { text: 'Məhsullar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>` },
     customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 21H2v-2a3 3 0 015.356-1.857M7 21v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
     categories: { text: 'Kateqoriyalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
@@ -291,7 +291,7 @@ const showAdminTab = async (tabName, container) => {
                 await showDashboard(container);
                 break;
             case 'products':
-                currentTabCleanup = await showProducts(container);
+                await showProducts(container);
                 break;
             case 'orders':
                 currentTabCleanup = await showOrders(container);
@@ -435,7 +435,7 @@ const showCustomers = async (container) => {
                 <h3 class="text-xl font-bold text-slate-800">Müştəri Siyahısı</h3>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                ${users.length > 0 ? users.map(user => createUserCard(user).outerHTML).join('') : `<div class="col-span-full text-center text-slate-500 py-8">Heç bir müştəri tapılmadı.</div>`}
+                ${users.length > 0 ? users.map(user => createUserCard(user).outerHTML).join('') : `<div class="col-span-full text-center p-6">Heç bir müştəri tapılmadı.</div>`}
             </div>
         `;
     } catch (error) {
@@ -493,278 +493,6 @@ const showOrders = async (container) => {
 
     // Return the unsubscribe function for cleanup
     return unsubscribe;
-};
-
-const showProducts = async (container) => {
-    container.innerHTML = `
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold text-slate-800">Məhsul İdarəetməsi</h3>
-            <div class="flex items-center space-x-3">
-                <button id="add-product-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
-                    <span class="flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
-                        <span>Yeni Məhsul</span>
-                    </span>
-                </button>
-                <button id="reset-db-btn" class="modern-btn bg-red-500 text-white px-6 py-3 rounded-xl font-semibold">
-                    <span class="flex items-center space-x-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m0 0H15"></path></svg>
-                        <span>Bazanı sıfırla</span>
-                    </span>
-                </button>
-            </div>
-        </div>
-        
-        <div class="mb-6 flex flex-col sm:flex-row gap-4">
-            <input type="text" id="product-search-input" placeholder="Məhsul axtar..." 
-                   class="ultra-modern-input flex-1 px-4 py-3 rounded-xl focus:outline-none text-base">
-            <select id="product-category-filter" class="ultra-modern-input w-full sm:w-auto px-4 py-3 rounded-xl focus:outline-none text-base">
-                <option value="all">Bütün Kateqoriyalar</option>
-                <!-- Categories will be loaded here -->
-            </select>
-        </div>
-
-        <div class="ultra-modern-card overflow-x-auto shadow-lg">
-            <table class="w-full text-sm text-left text-slate-500">
-                <thead class="text-xs text-slate-700 uppercase bg-slate-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3">Şəkil</th>
-                        <th scope="col" class="px-6 py-3">Məhsul Adı</th>
-                        <th scope="col" class="px-6 py-3">Kateqoriya</th>
-                        <th scope="col" class="px-6 py-3">Qiymət</th>
-                        <th scope="col" class="px-6 py-3">Stok</th>
-                        <th scope="col" class="px-6 py-3">Endirim</th>
-                        <th scope="col" class="px-6 py-3">Aksiya</th>
-                    </tr>
-                </thead>
-                <tbody id="products-table-body">
-                    <tr><td colspan="7" class="text-center p-8"><div class="loading-spinner"></div></td></tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <div id="product-modal-container"></div>
-    `;
-
-    const productsTableBody = container.querySelector('#products-table-body');
-    const productSearchInput = container.querySelector('#product-search-input');
-    const productCategoryFilter = container.querySelector('#product-category-filter');
-    const addProductBtn = container.querySelector('#add-product-btn');
-    const resetDbBtn = container.querySelector('#reset-db-btn');
-
-    let allProducts = [];
-    let allCategories = [];
-    let productsUnsubscribe = null; // Store unsubscribe function for cleanup
-
-    // Function to render the product table
-    const renderProductTable = (products) => {
-        productsTableBody.innerHTML = '';
-        if (products.length === 0) {
-            productsTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-slate-500">Heç bir məhsul tapılmadı.</td></tr>`;
-            return;
-        }
-        products.forEach(product => {
-            productsTableBody.appendChild(createProductRow(product));
-        });
-    };
-
-    // Function to filter products based on search and category
-    const filterProducts = () => {
-        const searchTerm = productSearchInput.value.toLowerCase();
-        const selectedCategory = productCategoryFilter.value;
-
-        let filtered = allProducts.filter(product => {
-            const matchesSearch = product.name.toLowerCase().includes(searchTerm) || 
-                                  (product.description && product.description.toLowerCase().includes(searchTerm));
-            const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-            return matchesSearch && matchesCategory;
-        });
-        renderProductTable(filtered);
-    };
-
-    // Load categories for the filter dropdown
-    try {
-        allCategories = await DataService.getCategories();
-        productCategoryFilter.innerHTML = '<option value="all">Bütün Kateqoriyalar</option>' + 
-            allCategories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
-    } catch (error) {
-        console.error("Error loading categories for product filter:", error);
-        NotificationService.show('Kateqoriyalar yüklənərkən xəta baş verdi.', 'error');
-    }
-
-    // Real-time listener for products
-    productsUnsubscribe = onSnapshot(collection(db, 'products'), (snapshot) => {
-        allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        filterProducts(); // Re-filter and render on every update
-    }, (error) => {
-        console.error("Error listening to products:", error);
-        productsTableBody.innerHTML = `<tr><td colspan="7" class="text-center p-8 text-red-500">Məhsullar yüklənərkən xəta baş verdi.</td></tr>`;
-        NotificationService.show('Məhsulları yükləyərkən xəta baş verdi!', 'error');
-    });
-
-    // Event listeners
-    productSearchInput.addEventListener('input', filterProducts);
-    productCategoryFilter.addEventListener('change', filterProducts);
-
-    addProductBtn.addEventListener('click', () => showProductModal(null, allCategories));
-
-    productsTableBody.addEventListener('click', async (event) => {
-        const editBtn = event.target.closest('.edit-product-btn');
-        const deleteBtn = event.target.closest('.delete-product-btn');
-        
-        if (editBtn) {
-            const productId = editBtn.dataset.productId;
-            const productToEdit = allProducts.find(p => p.id === productId);
-            if (productToEdit) {
-                showProductModal(productToEdit, allCategories);
-            }
-        } else if (deleteBtn) {
-            const productId = deleteBtn.dataset.productId;
-            const productToDelete = allProducts.find(p => p.id === productId);
-            if (productToDelete) {
-                const confirm = await NotificationService.showConfirm(`"${productToDelete.name}" məhsulunu silmək istədiyinizə əminsiniz?`);
-                if (confirm) {
-                    const loading = NotificationService.showLoading('Məhsul silinir...');
-                    const success = await DataService.deleteProduct(productId);
-                    NotificationService.hideLoading(loading);
-                    if (success) {
-                        NotificationService.show('Məhsul uğurla silindi!', 'success');
-                    } else {
-                        NotificationService.show('Məhsul silinərkən xəta baş verdi.', 'error');
-                    }
-                }
-            }
-        }
-    });
-
-    resetDbBtn.addEventListener('click', async () => {
-        const confirm = await NotificationService.showConfirm(
-            'Bütün məlumat bazasını sıfırlamaq istədiyinizə əminsiniz? Bütün sifarişlər, məhsullar, masalar və s. silinəcək və ilkin məlumatlarla əvəz olunacaq.',
-            'Bazanı sıfırla?',
-            'Bəli, sıfırla',
-            'Xeyr'
-        );
-        if (confirm) {
-            const loading = NotificationService.showLoading('Məlumat bazası sıfırlanır...');
-            try {
-                await DataService.resetDatabase();
-                NotificationService.show('Məlumat bazası uğurla sıfırlandı!', 'success');
-            } catch (error) {
-                console.error('Error resetting database:', error);
-                NotificationService.show('Məlumat bazası sıfırlanarkən xəta baş verdi.', 'error');
-            } finally {
-                NotificationService.hideLoading(loading);
-            }
-        }
-    });
-
-    // Return cleanup function to unsubscribe from real-time listener
-    return () => {
-        if (productsUnsubscribe) {
-            productsUnsubscribe(); // Detach the real-time listener
-            productsUnsubscribe = null;
-        }
-        productSearchInput.removeEventListener('input', filterProducts);
-        productCategoryFilter.removeEventListener('change', filterProducts);
-        // Note: For dynamically re-rendered elements like addProductBtn, resetDbBtn, and productsTableBody,
-        // their event listeners are implicitly cleaned up when their parent container's innerHTML is replaced.
-        // Explicit removal like this is primarily for listeners attached to static, long-lived elements or
-        // for more complex cleanup of event delegation patterns.
-    };
-};
-
-const showProductModal = (productData = null, categories = []) => {
-    const modalContainer = document.querySelector('#product-modal-container');
-    if (!modalContainer) return;
-
-    // Clear previous modal if any
-    modalContainer.innerHTML = '';
-
-    const modal = createElement('div', {
-        className: 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4'
-    });
-
-    const form = createAdminProductForm(productData, categories);
-
-    modal.innerHTML = `
-        <div class="ultra-modern-card p-0 w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
-            <div class="p-6 border-b border-slate-200 flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-slate-800">${productData ? 'Məhsulu Redaktə Et' : 'Yeni Məhsul Əlavə Et'}</h2>
-                <button class="close-modal w-8 h-8 bg-slate-200 hover:bg-slate-300 rounded-full flex items-center justify-center text-slate-600">&times;</button>
-            </div>
-            <div class="modal-content-area p-6 overflow-y-auto custom-scroll">
-                <!-- Form will be appended here -->
-            </div>
-        </div>
-    `;
-
-    modalContainer.appendChild(modal);
-    modal.querySelector('.modal-content-area').appendChild(form);
-
-    const closeModal = () => {
-        if (modal.parentNode) {
-            modal.parentNode.removeChild(modal);
-        }
-    };
-
-    modal.querySelector('.close-modal').addEventListener('click', closeModal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = {
-            name: formData.get('name'),
-            description: formData.get('description'),
-            price: parseFloat(formData.get('price')),
-            imageUrl: formData.get('imageUrl'),
-            category: formData.get('category'),
-            discountPercentage: parseFloat(formData.get('discountPercentage')) || 0,
-            isCampaignItem: formData.get('isCampaignItem') === 'on',
-            stock: parseInt(formData.get('stock')) || 0
-        };
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalContent = submitBtn.innerHTML;
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = `
-            <span class="flex items-center justify-center space-x-2">
-                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Yüklənir...</span>
-            </span>
-        `;
-        
-        const loadingNotification = NotificationService.showLoading(productData ? 'Məhsul yenilənir...' : 'Məhsul əlavə edilir...');
-
-        try {
-            let success = false;
-            if (productData) {
-                success = await DataService.updateProduct(productData.id, data);
-            } else {
-                success = await DataService.addProduct(data);
-            }
-
-            NotificationService.hideLoading(loadingNotification);
-
-            if (success) {
-                NotificationService.show(`Məhsul uğurla ${productData ? 'yeniləndi' : 'əlavə edildi'}!`, 'success');
-                closeModal();
-            } else {
-                NotificationService.show(`Məhsul ${productData ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi.`, 'error');
-            }
-        } catch (error) {
-            console.error('Error saving product:', error);
-            NotificationService.hideLoading(loadingNotification);
-            NotificationService.show('Məhsul saxlanılarkən xəta baş verdi.', 'error');
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalContent;
-        }
-    });
 };
 
 const showTables = async (container) => {
@@ -1175,7 +903,7 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
                     </button>
                     <!-- New "Ödənişlər" button -->
                     <button id="pos-payments-btn" class="pos-func-btn bg-purple-100 text-purple-700" title="Ödənişlər">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 00-2-2v-6a2 2 0 002-2H9a2 2 0 002 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         <span class="hidden sm:inline">Ödənişlər</span>
                     </button>
                     <!-- Renamed "Geri" to "Çıxış" -->
@@ -1259,7 +987,6 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
             </div>
         </div>
     `;
-};
 
 const showPOS = async (container) => {
     try {
@@ -1861,41 +1588,4 @@ const loadPOSExistingOrders = async (container) => {
     } else {
         listContainer.innerHTML = `<p class="text-center text-slate-500 py-8">Açıq sifariş yoxdur.</p>`;
     }
-};
-
-const createProductRow = (product) => {
-    const row = document.createElement('tr');
-    row.className = 'bg-white border-b border-slate-200';
-    row.innerHTML = `
-        <td class="px-6 py-3">
-            <div class="flex items-center space-x-2">
-                <img src="${product.imageUrl || 'https://placehold.co/50x50/e0f2fe/0284c7?text=No+Image'}" class="w-10 h-10 object-cover rounded" alt="${product.name}"
-                     onerror="this.src='https://placehold.co/50x50/e0f2fe/0284c7?text=No+Image';">
-            </div>
-        </td>
-        <td class="px-6 py-3">
-            <div class="flex items-center space-x-2">
-                <span class="font-semibold text-slate-800">${product.name}</span>
-                <span class="text-sm text-slate-600">${product.category || 'Naməlum'}</span>
-            </div>
-        </td>
-        <td class="px-6 py-3">
-            <div class="flex items-center space-x-2">
-                ${product.discountPercentage > 0 ? `<span class="line-through text-slate-400 text-sm mr-1">${product.price.toFixed(2)}</span>` : ''}
-                <span class="font-semibold text-slate-800">${(product.price * (1 - (product.discountPercentage || 0) / 100)).toFixed(2)} AZN</span>
-            </div>
-        </td>
-        <td class="px-6 py-3">
-            <div class="flex items-center space-x-2">
-                <span class="font-semibold text-slate-800">${product.stock !== undefined ? product.stock : 'N/A'}</span>
-            </div>
-        </td>
-        <td class="px-6 py-3">
-            <div class="flex items-center space-x-2">
-                <button class="edit-product-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-600 transition" data-product-id="${product.id}">Redaktə</button>
-                <button class="delete-product-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-600 transition" data-product-id="${product.id}">Sil</button>
-            </div>
-        </td>
-    `;
-    return row;
 };
