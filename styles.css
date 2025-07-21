@@ -1155,6 +1155,13 @@ body {
     animation: pulse-dot 1.5s infinite ease-in-out;
 }
 
+.timeline-item-active-dot {
+    background-color: #3b82f6; /* primary-500 */
+    border-color: #2563eb; /* primary-600 */
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+    animation: pulse-dot 1.5s infinite ease-in-out;
+}
+
 @keyframes pulse-dot {
     0% {
         transform: scale(1);
@@ -1168,4 +1175,71 @@ body {
         transform: scale(1);
         box-shadow: 0 0 0 0px rgba(59, 130, 246, 0);
     }
+}
+
+/* Settings tabs styling */
+.settings-tab {
+    display: flex;
+    align-items: center;
+    space-x: 0.5rem; /* space-x-2 */
+    padding: 0.75rem 1rem; /* px-4 py-3 */
+    border-radius: 0.75rem; /* rounded-xl */
+    font-weight: 600; /* font-semibold */
+    font-size: 0.875rem; /* text-sm */
+    color: #64748b; /* text-slate-500 */
+    background-color: #f1f5f9; /* bg-slate-100 */
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.settings-tab:hover {
+    background-color: #e2e8f0; /* bg-slate-200 */
+    color: #475569; /* text-slate-600 */
+    transform: translateY(-1px);
+}
+
+.settings-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+}
+
+.settings-tab svg {
+    width: 1.25rem; /* w-5 */
+    height: 1.25rem; /* h-5 */
+    margin-right: 0.5rem; /* mr-2 */
+}
+
+.settings-tab-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Social icons for info modal */
+.social-icon-btn {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.social-icon-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+}
+
+.instagram-bg {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.facebook-bg {
+    background: #1877f2;
+}
+
+.tiktok-bg {
+    background: linear-gradient(45deg, #ff0050, #000000);
 }

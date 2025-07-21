@@ -33,9 +33,9 @@ const MENU_ITEMS = {
     customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 21H2v-2a3 3 0 015.356-1.857M7 21v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
     categories: { text: 'Kateqoriyalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
     tables: { text: 'Masalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21v-3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
-    inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7l8 4-8 4m16-4l-8 4"></path></svg>` },
+    inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 0H4m8 8v2m0 0h2m-2 4h-2m9-14V5m-5 4a1 1 0 11-2 0 1 1 0 012 0v1m-1 4a1 1 0 00-1 1v3M4 7h16"></path></svg>` },
     employees: { text: 'İşçilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>` },
-    purchases: { text: 'Alışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6.5-5l2.5 5"></path></svg>` },
+    purchases: { text: 'Alışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H9a2 2 0 01-2-2v-5m0-8a2 2 0 012 2v2m0 0H9m0 0l3 3m-3-3l3-3m-3 3V8m0 4a2 2 0 01-2-2H5a2 2 0 01-2-2v-3m9 4H3"></path></svg>` },
     discounts: { text: 'Endirimlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>` },
     recipes: { text: 'Reseptlər', icon: `<img src="/chef-hat.png" class="w-5 h-5">` },
     suppliers: { text: 'Təchizatçılar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>` },
@@ -778,66 +778,321 @@ const showSettings = async (container) => {
 
     try {
         const businessInfo = await DataService.getBusinessInfo();
+        const users = await DataService.getUsers();
 
         container.innerHTML = `
-            <div class="max-w-2xl mx-auto">
-                <h3 class="text-xl font-bold text-slate-800 mb-6">Biznes Məlumatları</h3>
+            <div class="max-w-4xl mx-auto">
+                <h3 class="text-xl font-bold text-slate-800 mb-6">Sistem Tənzimləmələri</h3>
                 
-                <form id="business-info-form" class="ultra-modern-card p-6 space-y-6">
-                    <div>
-                        <label for="businessName" class="block text-sm font-bold text-slate-700 mb-2">Biznes Adı</label>
-                        <input type="text" id="businessName" name="businessName" value="${businessInfo.businessName || ''}" 
-                               class="ultra-modern-input w-full px-4 py-3 rounded-xl"
-                               placeholder="Restoran adı">
-                    </div>
-                    
-                    <div>
-                        <label for="businessAddress" class="block text-sm font-bold text-slate-700 mb-2">Ünvan</label>
-                        <input type="text" id="businessAddress" name="address" value="${businessInfo.address || ''}" 
-                               class="ultra-modern-input w-full px-4 py-3 rounded-xl"
-                               placeholder="Tam ünvan">
-                    </div>
-                    
-                    <div>
-                        <label for="businessPhone" class="block text-sm font-bold text-slate-700 mb-2">Telefon</label>
-                        <input type="tel" id="businessPhone" name="phone" value="${businessInfo.phone || ''}" 
-                               class="ultra-modern-input w-full px-4 py-3 rounded-xl"
-                               placeholder="+994 xx xxx xx xx">
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <h4 class="text-lg font-bold text-slate-800">Sosial Medialar</h4>
-                        
-                        <div>
-                            <label for="instagram" class="block text-sm font-bold text-slate-700 mb-2">Instagram</label>
-                            <input type="url" id="instagram" name="instagram" value="${businessInfo.socials?.instagram || ''}" 
-                                   class="ultra-modern-input w-full px-4 py-3 rounded-xl"
-                                   placeholder="https://instagram.com/username">
-                        </div>
-                        
-                        <div>
-                            <label for="facebook" class="block text-sm font-bold text-slate-700 mb-2">Facebook</label>
-                            <input type="url" id="facebook" name="facebook" value="${businessInfo.socials?.facebook || ''}" 
-                                   class="ultra-modern-input w-full px-4 py-3 rounded-xl"
-                                   placeholder="https://facebook.com/page">
-                        </div>
-                        
-                        <div>
-                            <label for="tiktok" class="block text-sm font-bold text-slate-700 mb-2">TikTok</label>
-                            <input type="url" id="tiktok" name="tiktok" value="${businessInfo.socials?.tiktok || ''}" 
-                                   class="ultra-modern-input w-full px-4 py-3 rounded-xl"
-                                   placeholder="https://tiktok.com/@username">
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
-                        Yadda saxla
+                <!-- Settings Tabs -->
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button class="settings-tab active" data-tab="business">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <span>Biznes Məlumatları</span>
                     </button>
-                </form>
+                    <button class="settings-tab" data-tab="users">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7"></path>
+                        </svg>
+                        <span>İstifadəçilər</span>
+                    </button>
+                    <button class="settings-tab" data-tab="database">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                        </svg>
+                        <span>Baza Tənzimləmələri</span>
+                    </button>
+                    <button class="settings-tab" data-tab="integrations">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                        </svg>
+                        <span>İnteqrasiyalar</span>
+                    </button>
+                </div>
+
+                <!-- Tab Contents -->
+                <div id="settings-content">
+                    <!-- Business Info Tab -->
+                    <div id="business-tab" class="settings-tab-content">
+                        <form id="business-info-form" class="ultra-modern-card p-6 space-y-6">
+                            <div>
+                                <label for="businessName" class="block text-sm font-bold text-slate-700 mb-2">Biznes Adı</label>
+                                <input type="text" id="businessName" name="businessName" value="${businessInfo.businessName || ''}" 
+                                       class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                       placeholder="Restoran adı">
+                            </div>
+                            
+                            <div>
+                                <label for="businessAddress" class="block text-sm font-bold text-slate-700 mb-2">Ünvan</label>
+                                <input type="text" id="businessAddress" name="address" value="${businessInfo.address || ''}" 
+                                       class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                       placeholder="Tam ünvan">
+                            </div>
+                            
+                            <div>
+                                <label for="businessPhone" class="block text-sm font-bold text-slate-700 mb-2">Telefon</label>
+                                <input type="tel" id="businessPhone" name="phone" value="${businessInfo.phone || ''}" 
+                                       class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                       placeholder="+994 xx xxx xx xx">
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <h4 class="text-lg font-bold text-slate-800">Sosial Medialar</h4>
+                                
+                                <div>
+                                    <label for="instagram" class="block text-sm font-bold text-slate-700 mb-2">Instagram</label>
+                                    <input type="url" id="instagram" name="instagram" value="${businessInfo.socials?.instagram || ''}" 
+                                           class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                           placeholder="https://instagram.com/username">
+                                </div>
+                                
+                                <div>
+                                    <label for="facebook" class="block text-sm font-bold text-slate-700 mb-2">Facebook</label>
+                                    <input type="url" id="facebook" name="facebook" value="${businessInfo.socials?.facebook || ''}" 
+                                           class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                           placeholder="https://facebook.com/page">
+                                </div>
+                                
+                                <div>
+                                    <label for="tiktok" class="block text-sm font-bold text-slate-700 mb-2">TikTok</label>
+                                    <input type="url" id="tiktok" name="tiktok" value="${businessInfo.socials?.tiktok || ''}" 
+                                           class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                           placeholder="https://tiktok.com/@username">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="w-full premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
+                                Yadda saxla
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Users Tab -->
+                    <div id="users-tab" class="settings-tab-content hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h4 class="text-lg font-bold text-slate-800">Sistem İstifadəçiləri</h4>
+                            <button id="add-user-btn" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
+                                Yeni İstifadəçi
+                            </button>
+                        </div>
+                        <div class="ultra-modern-card p-6">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left text-slate-500">
+                                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                                        <tr>
+                                            <th class="px-4 py-3">Email</th>
+                                            <th class="px-4 py-3">Rol</th>
+                                            <th class="px-4 py-3">Qeydiyyat Tarixi</th>
+                                            <th class="px-4 py-3">Status</th>
+                                            <th class="px-4 py-3">Əməliyyatlar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${users.map(user => `
+                                            <tr class="bg-white border-b hover:bg-slate-50">
+                                                <td class="px-4 py-3 font-medium text-slate-900">${user.email || user.id}</td>
+                                                <td class="px-4 py-3">
+                                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}">
+                                                        ${getRoleText(user.role)}
+                                                    </span>
+                                                </td>
+                                                <td class="px-4 py-3">${user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+                                                <td class="px-4 py-3">
+                                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Aktiv</span>
+                                                </td>
+                                                <td class="px-4 py-3 flex space-x-2">
+                                                    <button class="edit-user-btn text-blue-600 hover:text-blue-800" data-user-id="${user.id}">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1-4H9a2 2 0 00-2-2V6a2 2 0 012-2h2m-1 4h2m-1 4v2m-9 4h2"></path>
+                                                        </svg>
+                                                    </button>
+                                                    ${user.role !== 'admin' ? `
+                                                        <button class="delete-user-btn text-red-600 hover:text-red-800" data-user-id="${user.id}">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
+                                                    ` : ''}
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Tab -->
+                    <div id="database-tab" class="settings-tab-content hidden">
+                        <div class="ultra-modern-card p-6 space-y-6">
+                            <h4 class="text-lg font-bold text-slate-800 mb-4">Verilənlər Bazası İdarəetməsi</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Database Statistics -->
+                                <div class="space-y-4">
+                                    <h5 class="font-semibold text-slate-700">Baza Statistikaları</h5>
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between p-3 bg-slate-50 rounded-xl">
+                                            <span class="text-slate-600">Məhsullar:</span>
+                                            <span class="font-bold" id="stats-products">-</span>
+                                        </div>
+                                        <div class="flex justify-between p-3 bg-slate-50 rounded-xl">
+                                            <span class="text-slate-600">Sifarişlər:</span>
+                                            <span class="font-bold" id="stats-orders">-</span>
+                                        </div>
+                                        <div class="flex justify-between p-3 bg-slate-50 rounded-xl">
+                                            <span class="text-slate-600">İstifadəçilər:</span>
+                                            <span class="font-bold" id="stats-users">${users.length}</span>
+                                        </div>
+                                        <div class="flex justify-between p-3 bg-slate-50 rounded-xl">
+                                            <span class="text-slate-600">Masalar:</span>
+                                            <span class="font-bold" id="stats-tables">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Database Actions -->
+                                <div class="space-y-4">
+                                    <h5 class="font-semibold text-slate-700">Baza Əməliyyatları</h5>
+                                    <div class="space-y-3">
+                                        <button id="refresh-stats-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
+                                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                            </svg>
+                                            Statistikları Yenilə
+                                        </button>
+                                        
+                                        <button id="backup-db-btn" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
+                                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                            </svg>
+                                            Yedəkləmə Yarat
+                                        </button>
+                                        
+                                        <button id="reset-db-btn" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
+                                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Bazanı Sıfırla
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                                        <div class="flex">
+                                            <svg class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <div class="text-sm text-yellow-700">
+                                                <strong>Diqqət:</strong> Baza əməliyyatları geri qaytarıla bilməz. Əməliyyat öncəsi yedəkləmə yaradın.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Integrations Tab -->
+                    <div id="integrations-tab" class="settings-tab-content hidden">
+                        <div class="ultra-modern-card p-6">
+                            <h4 class="text-lg font-bold text-slate-800 mb-6">Xarici Servislər və İnteqrasiyalar</h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Payment Systems -->
+                                <div class="border border-slate-200 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-slate-800">Ödəniş Sistemləri</h5>
+                                                <p class="text-sm text-slate-500">Online ödəniş üçün</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                    </div>
+                                    <p class="text-sm text-slate-600">Kapital Bank, Unibank, PayPal və digər ödəniş sistemləri ilə inteqrasiya.</p>
+                                </div>
+
+                                <!-- SMS Service -->
+                                <div class="border border-slate-200 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-slate-800">SMS Xidməti</h5>
+                                                <p class="text-sm text-slate-500">Müştəri bildirişləri</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                    </div>
+                                    <p class="text-sm text-slate-600">Sifariş statusu və kampanyalar haqqında SMS bildirişləri.</p>
+                                </div>
+
+                                <!-- Accounting -->
+                                <div class="border border-slate-200 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-slate-800">Mühasibat Sistemi</h5>
+                                                <p class="text-sm text-slate-500">Maliyyə hesabatları</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                    </div>
+                                    <p class="text-sm text-slate-600">1C, SAP və digər mühasibat sistemləri ilə inteqrasiya.</p>
+                                </div>
+
+                                <!-- Delivery -->
+                                <div class="border border-slate-200 rounded-xl p-4">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h5 class="font-semibold text-slate-800">Çatdırılma Xidməti</h5>
+                                                <p class="text-sm text-slate-500">Kuryerlər üçün</p>
+                                            </div>
+                                        </div>
+                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                    </div>
+                                    <p class="text-sm text-slate-600">Bolt Food, Wolt və digər çatdırılma platformaları.</p>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 text-center">
+                                <p class="text-slate-500 text-sm">Bu funksiyalar növbəti versiyalarda əlavə ediləcək.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
 
-        // Add event listener for form submission
+        // Setup settings tabs event listeners
+        setupSettingsEventListeners(container);
+        
+        // Load database statistics
+        loadDatabaseStatistics();
+
+        // Add event listener for business info form submission
         container.querySelector('#business-info-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -868,6 +1123,112 @@ const showSettings = async (container) => {
                 <p class="text-red-500">Tənzimləmələr yüklənərkən xəta baş verdi.</p>
             </div>
         `;
+    }
+};
+
+// Helper functions for user management
+const getRoleColor = (role) => {
+    const colors = {
+        admin: 'bg-red-100 text-red-800',
+        manager: 'bg-purple-100 text-purple-800',
+        cashier: 'bg-blue-100 text-blue-800',
+        waiter: 'bg-green-100 text-green-800',
+        guest: 'bg-gray-100 text-gray-800',
+        'guest-anonymous': 'bg-yellow-100 text-yellow-800'
+    };
+    return colors[role] || 'bg-gray-100 text-gray-800';
+};
+
+const getRoleText = (role) => {
+    const texts = {
+        admin: 'Admin',
+        manager: 'Menecer',
+        cashier: 'Kassir',
+        waiter: 'Ofisant',
+        guest: 'Qonaq',
+        'guest-anonymous': 'Anonim Qonaq'
+    };
+    return texts[role] || role;
+};
+
+const setupSettingsEventListeners = (container) => {
+    // Settings tabs
+    const tabs = container.querySelectorAll('.settings-tab');
+    const tabContents = container.querySelectorAll('.settings-tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Remove active from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.add('hidden'));
+
+            // Add active to clicked tab
+            tab.classList.add('active');
+            const targetTab = container.querySelector(`#${tab.dataset.tab}-tab`);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Database operations
+    const refreshStatsBtn = container.querySelector('#refresh-stats-btn');
+    const backupDbBtn = container.querySelector('#backup-db-btn');
+    const resetDbBtn = container.querySelector('#reset-db-btn');
+
+    if (refreshStatsBtn) {
+        refreshStatsBtn.addEventListener('click', loadDatabaseStatistics);
+    }
+
+    if (backupDbBtn) {
+        backupDbBtn.addEventListener('click', async () => {
+            NotificationService.show('Yedəkləmə funksiyas gələcəkdə əlavə ediləcək.', 'info');
+        });
+    }
+
+    if (resetDbBtn) {
+        resetDbBtn.addEventListener('click', async () => {
+            const confirmed = await NotificationService.showConfirm(
+                'Bütün məlumatlar silinəcək və sistem başlanğıc vəziyyətə qaytarılacaq. Bu əməliyyat geri qaytarıla bilməz.',
+                'Bazanı Sıfırlamaq İstədiyinizə Əminsinizmi?',
+                'Bəli, Sıfırla',
+                'Xeyr'
+            );
+
+            if (confirmed) {
+                const loading = NotificationService.showLoading('Baza sıfırlanır...');
+                try {
+                    await DataService.resetDatabase();
+                    NotificationService.hideLoading(loading);
+                    NotificationService.show('Baza uğurla sıfırlandı!', 'success');
+                    loadDatabaseStatistics(); // Refresh stats
+                } catch (error) {
+                    NotificationService.hideLoading(loading);
+                    console.error('Error resetting database:', error);
+                    NotificationService.show('Baza sıfırlanarkən xəta baş verdi!', 'error');
+                }
+            }
+        });
+    }
+};
+
+const loadDatabaseStatistics = async () => {
+    try {
+        const [products, orders, tables] = await Promise.all([
+            DataService.getProducts(),
+            DataService.getOrders(),
+            DataService.getTables()
+        ]);
+
+        const statsProducts = document.getElementById('stats-products');
+        const statsOrders = document.getElementById('stats-orders');
+        const statsTables = document.getElementById('stats-tables');
+
+        if (statsProducts) statsProducts.textContent = products.length;
+        if (statsOrders) statsOrders.textContent = orders.length;
+        if (statsTables) statsTables.textContent = tables.length;
+    } catch (error) {
+        console.error('Error loading database statistics:', error);
     }
 };
 

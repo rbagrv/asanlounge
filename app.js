@@ -124,7 +124,7 @@ const initializeApp = async () => {
             // localStorage.removeItem('customerMobile');
             
              // If a table is specified in the URL, log in as a guest automatically
-            await loginAsGuest();
+            await loginAsGuest(); // Login anonymously immediately for QR code users
         }
         // Clear params from URL to avoid re-triggering guest login on refresh
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -159,8 +159,14 @@ const initializeApp = async () => {
         console.log('User logged in with role:', role);
 
         if (role === 'guest-anonymous') {
-            // Guest role will now handle its own prompts for table/customer info
-            showSection(role);
+            // If table number and customer info are all set, go straight to menu
+            if (guestApp.guestTableNumber && guestApp.customerName && guestApp.customerMobile) {
+                showSection(role);
+            } else {
+                // Otherwise, show the guest table entry screen to get initial info
+                // guestApp's placeOrder will trigger the name/mobile prompt if they are missing
+                showGuestTableEntryScreen();
+            }
         } else {
             showSection(role);
         }
@@ -186,8 +192,9 @@ loginForm.addEventListener('submit', async (event) => {
 roleGuestBtn.addEventListener('click', async () => {
     const result = await loginAsGuest();
     if (result.success) {
-        // After successful anonymous login, guestApp will decide whether to prompt for info or show menu
-        showSection('guest-anonymous');
+        // After successful anonymous login, show the table entry screen.
+        // The guestApp.render() will then decide if it needs to prompt for name/mobile on order.
+        showGuestTableEntryScreen();
     } else {
         NotificationService.show(`Giriş xətası: ${result.error}`, 'error');
     }
@@ -241,7 +248,7 @@ logoutBtn.addEventListener('click', async () => {
     guestApp.lastKnownOrderStatuses = {}; // Clear tracked order statuses for next session
 
     if (guestApp.orderListenerUnsubscribe) {
-        guestApp.orderListenerUnsubscribe();
+        guestApp.orderListenerUnsubscribe(); // Unsubscribe from order tracking
     }
     guestNotificationsBtn.classList.add('hidden');
     profileDropdown.classList.add('hidden'); // Hide dropdown on logout
@@ -357,6 +364,12 @@ document.getElementById('info-btn').addEventListener('click', async () => {
             closeModal();
         }
     });
+});
+
+// Event listener for guest notifications button in the header
+guestNotificationsBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    guestApp.showOrderStatusModal();
 });
 
 const launchPOS = async () => {

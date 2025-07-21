@@ -733,7 +733,7 @@ export class GuestModule {
         localStorage.setItem('customerMobile', finalCustomerMobile);
 
         NotificationService.show(
-          `🎉 Sifarişiniz uğurla qəbul edildi! Masa ${finalTableNumber} üçün hazırlığa başlandı. Təşəkkür edirik!`, 
+          `🎉 Sifarişiniz uğurla qəbul edildi! Masa ${finalTableNumber} üçün hazırlığa başlandı, ${finalCustomerName}. Təşəkkür edirik!`, 
           'success', 
           8000
         );
@@ -927,7 +927,8 @@ export class GuestModule {
               // Play sound only for specific status transitions important to guest
               if (order.status === 'in-prep' || order.status === 'ready' || order.status === 'served') {
                   this.playGuestNotificationSound();
-                  NotificationService.show(`Sifarişiniz yeniləndi: Masa ${order.tableNumber} - ${StatusUtils.getStatusText(order.status)}`, 'info', 5000);
+                  const customerName = order.customerName || 'Ziyarətçi';
+                  NotificationService.show(`Sifarişiniz yeniləndi, ${customerName}: Masa ${order.tableNumber} - ${StatusUtils.getStatusText(order.status)}`, 'info', 5000);
               }
           }
           // Update last known status
@@ -989,11 +990,13 @@ export class GuestModule {
           return;
       }
 
-      // Re-fetch full order objects from this.lastKnownOrderStatuses to ensure all data is present
+      // Filter and map only active orders from lastKnownOrderStatuses that match the given orders
       const ordersToDisplay = orders.map(activeOrder => {
-          const storedOrder = Object.entries(this.lastKnownOrderStatuses).find(([id, status]) => id === activeOrder.id);
-          return storedOrder ? activeOrder : null; // Use the full order object that was tracked
-      }).filter(Boolean);
+          // Find the full order object that we've been tracking, not just the ID and status
+          const fullOrder = Object.values(this.lastKnownOrderStatuses).find(o => o.id === activeOrder.id);
+          return fullOrder || activeOrder; // Use full tracked object if available, otherwise fallback to activeOrder
+      }).filter(Boolean); // Filter out any nulls if an order wasn't found in tracking (shouldn't happen but for safety)
+
 
       container.innerHTML = ordersToDisplay.map(order => this.createOrderStatusTimeline(order)).join('');
   }
@@ -1012,7 +1015,7 @@ export class GuestModule {
     let customerInfoHTML = '';
     // Display customer info if available in the order object
     if (order.customerName || order.customerMobile) {
-        customerInfoHTML = `<p class="text-sm text-slate-600 mb-4">Müştəri: ${order.customerName || 'N/A'} | ${order.customerMobile || 'N/A'}</p>`;
+        customerInfoHTML = `<p class="text-sm text-slate-600 mb-4">Müştəri: ${order.customerName || 'N/A'} | Mobil: ${order.customerMobile || 'N/A'}</p>`;
     }
 
     const timelineItems = statuses.map((status, index) => {
@@ -1025,7 +1028,7 @@ export class GuestModule {
         let textClass = 'text-slate-500';
 
         if (isActive) {
-            dotClass = 'bg-primary-500 border-primary-500 animate-pulse-slow'; // Pulsing for active
+            dotClass = 'timeline-item-active-dot'; // Pulsing for active
             contentClass = 'font-bold text-slate-800';
             textClass = 'text-primary-600';
         } else if (isCompleted) {
