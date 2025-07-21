@@ -244,7 +244,7 @@ export const createAdminProductForm = (product = null, categories = []) => {
         
         <div class="flex space-x-4 pt-4">
             <button type="submit" 
-                    class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                    class="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-rotate-1">
                 <span class="flex items-center justify-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m8-8H4"></path>
@@ -342,33 +342,6 @@ export const createOrderCard = (order) => {
     return card;
 };
 
-export const createTableCard = (table) => {
-    const card = createElement('div', { 
-        className: `bg-white rounded-2xl shadow-lg p-6 card-hover ${table.isOccupied ? 'border-l-4 border-red-500' : 'border-l-4 border-green-500'}`, 
-        dataset: { tableId: table.id } 
-    });
-    
-    card.innerHTML = `
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-800">Masa ${table.number}</h3>
-            <span class="px-3 py-1 rounded-full text-sm font-semibold ${table.isOccupied ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
-                ${table.isOccupied ? 'Məişğul' : 'Boş'}
-            </span>
-        </div>
-        <p class="text-gray-600 mb-4">Tutum: ${table.capacity} nəfər</p>
-        <div class="flex space-x-2">
-            <button class="flex-1 bg-blue-500 text-white px-3 py-2 rounded-md text-sm hover:bg-blue-600 transition qr-code-btn" data-table-id="${table.id}">
-                QR Kod
-            </button>
-            <button class="flex-1 bg-gray-500 text-white px-3 py-2 rounded-md text-sm hover:bg-gray-600 transition edit-table-btn" data-table-id="${table.id}">
-                Redaktə
-            </button>
-        </div>
-    `;
-    
-    return card;
-};
-
 export const createAnalyticsCard = (title, value, subtitle = '', color = 'blue') => {
     const card = createElement('div', { className: 'admin-stat-card p-6' });
     
@@ -399,52 +372,6 @@ export const createAnalyticsCard = (title, value, subtitle = '', color = 'blue')
             </div>
         </div>
     `;
-    return card;
-};
-
-export const createOrderCard = (order) => {
-    const card = createElement('div', { 
-        className: 'bg-white rounded-2xl shadow-lg p-6 card-hover', 
-        dataset: { orderId: order.id } 
-    });
-    
-    const header = createElement('div', { className: 'flex justify-between items-start mb-4' });
-    header.appendChild(createElement('h3', { className: 'text-xl font-bold text-gray-800' }, [`Sifariş #${order.id.substring(0, 8)}`]));
-    header.appendChild(createElement('span', { className: `px-3 py-1 rounded-full text-sm font-semibold ${StatusUtils.getStatusColor(order.status)}` }, [StatusUtils.getStatusText(order.status)]));
-    card.appendChild(header);
-    
-    card.appendChild(createElement('p', { className: 'text-gray-600 mb-2' }, [`Stol: #${order.tableNumber}`]));
-    
-    // Safely handle timestamp
-    const timestampText = (order.createdAt && typeof order.createdAt.seconds === 'number')
-        ? new Date(order.createdAt.seconds * 1000).toLocaleString()
-        : 'Tarix yoxdur';
-    card.appendChild(createElement('p', { className: 'text-gray-500 text-sm mb-4' }, [timestampText]));
-
-    const itemsList = createElement('div', { className: 'space-y-2 mb-4' });
-    order.items.forEach(item => {
-        const itemDiv = createElement('div', { className: 'flex justify-between items-center text-sm' });
-        itemDiv.appendChild(createElement('span', { className: 'text-gray-700' }, [`${item.name} x${item.quantity}`]));
-        itemDiv.appendChild(createElement('span', { className: 'font-semibold text-gray-800' }, [`${(item.priceAtOrder * item.quantity).toFixed(2)} AZN`]));
-        itemsList.appendChild(itemDiv);
-    });
-    card.appendChild(itemsList);
-
-    const total = order.items.reduce((sum, item) => sum + (item.priceAtOrder * item.quantity), 0);
-    card.appendChild(createElement('p', { className: 'text-xl font-bold text-gray-800 mb-4' }, [`Ümumi: ${total.toFixed(2)} AZN`]));
-
-    if (order.status !== 'paid') {
-        const actionsDiv = createElement('div', { className: 'flex space-x-2' });
-        const nextStatus = StatusUtils.getNextStatus(order.status);
-        if (nextStatus) {
-            actionsDiv.appendChild(createElement('button', { 
-                className: 'flex-1 gradient-btn text-white px-4 py-2 rounded-lg font-semibold transition duration-300 update-status-btn', 
-                dataset: { status: nextStatus.key } 
-            }, [nextStatus.text]));
-        }
-        card.appendChild(actionsDiv);
-    }
-
     return card;
 };
 

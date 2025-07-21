@@ -1864,36 +1864,38 @@ const loadPOSExistingOrders = async (container) => {
 };
 
 const createProductRow = (product) => {
-    return `
-        <tr class="border-b border-slate-200">
-            <td class="px-6 py-3">
-                <div class="flex items-center space-x-2">
-                    <img src="${product.imageUrl || '/default-product.png'}" class="w-10 h-10 rounded" alt="Product Image">
-                </div>
-            </td>
-            <td class="px-6 py-3">
-                <div class="flex items-center space-x-2">
-                    <span class="font-semibold text-slate-800">${product.name}</span>
-                    <span class="text-sm text-slate-600">${product.category}</span>
-                </div>
-            </td>
-            <td class="px-6 py-3">
-                <div class="flex items-center space-x-2">
-                    <span class="font-semibold text-slate-800">${product.price.toFixed(2)} AZN</span>
-                    <span class="text-sm text-slate-600">${product.discountPercentage}% endirim</span>
-                </div>
-            </td>
-            <td class="px-6 py-3">
-                <div class="flex items-center space-x-2">
-                    <span class="font-semibold text-slate-800">${product.stock || 'Yox'}</span>
-                </div>
-            </td>
-            <td class="px-6 py-3">
-                <div class="flex items-center space-x-2">
-                    <button class="edit-product-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm" data-product-id="${product.id}">Redaktə</button>
-                    <button class="delete-product-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm" data-product-id="${product.id}">Sil</button>
-                </div>
-            </td>
-        </tr>
+    const row = document.createElement('tr');
+    row.className = 'bg-white border-b border-slate-200';
+    row.innerHTML = `
+        <td class="px-6 py-3">
+            <div class="flex items-center space-x-2">
+                <img src="${product.imageUrl || 'https://placehold.co/50x50/e0f2fe/0284c7?text=No+Image'}" class="w-10 h-10 object-cover rounded" alt="${product.name}"
+                     onerror="this.src='https://placehold.co/50x50/e0f2fe/0284c7?text=No+Image';">
+            </div>
+        </td>
+        <td class="px-6 py-3">
+            <div class="flex items-center space-x-2">
+                <span class="font-semibold text-slate-800">${product.name}</span>
+                <span class="text-sm text-slate-600">${product.category || 'Naməlum'}</span>
+            </div>
+        </td>
+        <td class="px-6 py-3">
+            <div class="flex items-center space-x-2">
+                ${product.discountPercentage > 0 ? `<span class="line-through text-slate-400 text-sm mr-1">${product.price.toFixed(2)}</span>` : ''}
+                <span class="font-semibold text-slate-800">${(product.price * (1 - (product.discountPercentage || 0) / 100)).toFixed(2)} AZN</span>
+            </div>
+        </td>
+        <td class="px-6 py-3">
+            <div class="flex items-center space-x-2">
+                <span class="font-semibold text-slate-800">${product.stock !== undefined ? product.stock : 'N/A'}</span>
+            </div>
+        </td>
+        <td class="px-6 py-3">
+            <div class="flex items-center space-x-2">
+                <button class="edit-product-btn bg-blue-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-600 transition" data-product-id="${product.id}">Redaktə</button>
+                <button class="delete-product-btn bg-red-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-600 transition" data-product-id="${product.id}">Sil</button>
+            </div>
+        </td>
     `;
+    return row;
 };
