@@ -350,7 +350,7 @@ export const createKitchenOrderCard = (order) => {
             <span class="flex items-center justify-center space-x-2">
                 <span>${nextStatus.text}</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7H5.4M7 13L5.4 5M7 13l2.5 5M9.99 17.93l3.76 1.83"></path>
                 </svg>
             </span>
         `;
@@ -611,4 +611,15 @@ export const createPOSCategoryCard = (category) => {
     });
     card.textContent = category.name;
     return card;
+};
+
+// Merged from the second components.js file
+export const getPOSCategories = () => {
+  const categories = [
+    { name: 'all' },
+    { name: 'breakfast' },
+    { name: 'lunch' },
+    { name: 'dinner' }
+  ];
+  return categories;
 };

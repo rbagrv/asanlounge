@@ -31,15 +31,15 @@ let salesChartInstances = {}; // To store Chart.js instances
 // --- Menu Configuration ---
 const MENU_ITEMS = {
     dashboard: { text: 'Göstərici Lövhə', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`, permission: 'view_dashboard' },
-    pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`, permission: 'view_pos' },
+    pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, permission: 'view_pos' },
     kitchen: { text: 'Mətbəx', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, permission: 'view_kitchen' },
     orders: { text: 'Sifarişlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m6-4h-6m-6 4h6m6 4h-6m-6 4h6m-6-4h6m6-4v10m6-10v10m6-10v10M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>`, permission: 'view_orders' },
-    sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1m8-10a3 3 0 01-3-3V7a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_sales' },
+    sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_sales' },
     products: { text: 'Məhsullar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`, permission: 'view_products' },
     customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7"></path></svg>`, permission: 'view_customers' },
     categories: { text: 'Kateqoriyalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_categories' },
     tables: { text: 'Masalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, permission: 'view_tables' },
-    inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7m4 10v2m0 0h2m-2-4h-2m9-14V5m-5 4a1 1 0 11-2 0 1 1 0 012 0v1m-1 4a1 1 0 00-1 1v3M4 7h16"></path></svg>`, permission: 'view_inventory' },
+    inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7m4 10v2m0 0v-2m-2 0V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m6-4c1.1 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.1 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`, permission: 'view_inventory' },
     employees: { text: 'İşçilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-2.12-2.19L15 6v14m-3-7v-6a1 1 0 00-1.94-1.78L10.75 5.14a1 1 0 00-1.94 1.78v6m-8-1H2v-4a1 1 0 00-1-1h-1m12 0a1 1 0 00-1 1v4m0 0H4v4a1 1 0 001 1h12a1 1 0 001-1v-4m0 0H2v-1a1 1 0 00-1-1V7a1 1 0 011-1h2m3 3H3m18 0h-2m-3 4l-2-2m0 0l-2 2m-2 2v1m6-4h-4m-4 0H7m6-4l2 2m6 2v1m-6 4h4m4-4l2-2m-2-2v-1"></path></svg>`, permission: 'view_employees' },
     purchases: { text: 'Alışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10m-4-4l4-4m4 4H7m6-4v4m4-4H7"></path></svg>`, permission: 'view_purchases' },
     discounts: { text: 'Endirimlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_discounts' },
@@ -152,10 +152,15 @@ export const showAdminLoginPrompt = () => {
     });
 };
 
-export const renderAdminSection = (container) => {
+export const renderAdminSection = (container, forceTab = null) => {
     const role = getCurrentRole();
     if (AuthService.hasPermission('view_dashboard') || AuthService.hasPermission('view_pos') || AuthService.hasPermission('view_kitchen') || AuthService.hasPermission('view_orders') || AuthService.hasPermission('view_sales')) { // Check if user has permission to view ANY admin panel section
-        renderAdminPanel(container, role);
+        if (role === 'cashier' || forceTab === 'pos') {
+            // If cashier, render POS directly without the full admin panel shell.
+            showPOS(container);
+        } else {
+            renderAdminPanel(container, role);
+        }
     } else {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Bu bölməyə giriş icazəniz yoxdur. Zəhmət olmasa, admin ilə əlaqə saxlayın.</p>`;
     }
@@ -1702,7 +1707,7 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
                             <span class="hidden sm:inline">Quick Sale (F10)</span>
                         </button>
                         <button id="pos-hold-order-btn" class="pos-func-btn bg-yellow-100 text-yellow-700" title="F2 - Hold Order">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3v-6a2 2 0 012-2h2a2 2 0 012 2v3"></path></svg>
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0l-4-4m4 4H7m6-4v4m4-4H7"></path></svg>
                             <span class="hidden sm:inline">Hold Order (F2)</span>
                         </button>
                         <button id="pos-new-order-btn" class="pos-func-btn bg-blue-100 text-blue-700" title="F1 - New Order">
@@ -1712,7 +1717,7 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
                     ` : ''}
                     ${AuthService.hasPermission('view_sales') ? `
                         <button id="pos-payments-btn" class="pos-func-btn bg-purple-100 text-purple-700" title="View Payments">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1m8-10a3 3 0 01-3-3V7a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9v-4m3 4v-2m3-4V7m-6 4v3m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span class="hidden sm:inline">Payments</span>
                         </button>
                     ` : ''}

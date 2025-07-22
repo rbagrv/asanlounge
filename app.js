@@ -28,6 +28,7 @@ const guestNotificationsBtn = document.getElementById('guest-notifications-btn')
 const offlineIndicator = document.getElementById('offline-indicator'); // New element
 const pendingOrdersBadge = document.getElementById('pending-orders-badge'); // New element
 const systemStatusMessages = document.getElementById('system-status-messages'); // New element for system self-test
+const posWrapper = document.getElementById('pos-wrapper'); // POS wrapper
 
 export { offlineMode }; // Export offlineMode for other modules
 
@@ -37,7 +38,7 @@ const sections = {
     'waiter': document.getElementById('waiter-section'),
     'admin': document.getElementById('admin-section'),
     'manager': document.getElementById('admin-section'),
-    'cashier': document.getElementById('admin-section'), // Ensure cashier maps to admin section
+    'cashier': document.getElementById('admin-section'), // Cashier also uses admin section, which will render POS
     'guest-table-entry': guestTableEntrySection, // New section
 };
 
@@ -120,8 +121,10 @@ const showSection = (role) => {
             guestNotificationsBtn.classList.remove('hidden'); // Guest should always see their notifications btn
         }
         if (role === 'waiter') renderWaiterSection(sections[role]);
-        // Admin, Manager, Cashier roles all use the admin panel structure
-        if (['admin', 'manager', 'cashier'].includes(role)) renderAdminSection(sections[role]);
+        // Admin, Manager roles all use the admin panel structure
+        if (['admin', 'manager'].includes(role)) renderAdminSection(sections[role]);
+        // Cashier role now directly renders the POS view into the posWrapper
+        if (role === 'cashier') renderAdminSection(sections[role], 'pos');
         
         userActions.classList.remove('hidden');
         guestBtn.classList.add('hidden');
@@ -517,20 +520,21 @@ document.getElementById('info-btn').addEventListener('click', async () => {
     ` : '';
     
     modal.querySelector('.ultra-modern-card').innerHTML = `
-        <div class="text-center mb-6">
-            <img src="/appicon.png" alt="Logo" class="app-logo w-24 h-24 mx-auto mb-4">
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">${info.businessName || 'Eat & Drink App'}</h2>
-        </div>
-        
-        <div class="text-sm text-slate-700 space-y-3 text-center">
-            <p><strong class="font-semibold">Ünvan:</strong> ${info.address || 'Təyin edilməyib'}</p>
-            <p><strong class="font-semibold">Telefon:</strong> ${info.phone || 'Təyin edilməyib'}</p>
-        </div>
+        <div class="p-6">
+            <div class="text-center mb-6">
+                <img src="/appicon.png" alt="Logo" class="app-logo w-24 h-24 mx-auto mb-4">
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">${info.businessName || 'Eat & Drink App'}</h2>
+            </div>
+            
+            <div class="text-sm text-slate-700 space-y-3 text-center">
+                <p><strong class="font-semibold">Ünvan:</strong> ${info.address || 'Təyin edilməyib'}</p>
+                <p><strong class="font-semibold">Telefon:</strong> ${info.phone || 'Təyin edilməyib'}</p>
+            </div>
 
-        ${socialLinksHTML}
-        ${mapHTML}
-
-        <div class="mt-8 text-center">
+            ${socialLinksHTML}
+            ${mapHTML}
+        </div>
+        <div class="mt-8 text-center p-6 bg-slate-50 rounded-b-2xl">
             <button id="close-info-modal" class="premium-gradient-btn text-white px-8 py-3 rounded-xl font-semibold">
                 Bağla
             </button>
@@ -557,18 +561,8 @@ guestNotificationsBtn.addEventListener('click', (e) => {
     guestApp.showOrderStatusModal();
 });
 
-const launchPOS = async () => {
-    const posContainer = document.getElementById('pos-modal-container');
-    const mainHeader = document.querySelector('header');
-    const appContent = document.getElementById('app-content');
-    
-    // Hide main header and adjust content padding
-    if(mainHeader) mainHeader.style.display = 'none';
-    if(appContent) appContent.style.paddingTop = '0';
-    
-    // Load products and categories for POS
-    posProducts = await DataService.getProducts();
-};
+// This function is now redundant as POS is handled within the admin module.
+// It is kept here to avoid breaking any potential calls, but its body is cleared.
 
 // Initial app load
 initializeApp();

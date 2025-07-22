@@ -3,16 +3,17 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
-// Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAuoNz-WvITRScgfVFrCa3WECAU-dwUjB4",
-  authDomain: "asanlounge-1a087.firebaseapp.com",
-  projectId: "asanlounge-1a087",
-  storageBucket: "asanlounge-1a087.firebasestorage.app",
-  messagingSenderId: "94583613469",
-  appId: "1:94583613469:web:08ebfc0db9e264ff4a3ef4",
-  measurementId: "G-45PKXPT7DP"
+  // IMPORTANT: Replace the placeholder values below with your actual Firebase project configuration.
+  // Go to your Firebase project settings -> "General" tab -> "Your apps" section -> "Web" app to find your config.
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID" // Optional
 };
 
 // Initialize Firebase
@@ -34,6 +35,3 @@ export const signInGuestAnonymously = async () => {
 };
 
 export { db, auth, functions };
-
-// You will need to replace the placeholder values above with your actual Firebase project configuration.
-// Go to your Firebase project settings -> "General" tab -> "Your apps" section -> "Web" app to find your config.
