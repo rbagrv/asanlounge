@@ -3,7 +3,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eat & drink app</title>
-    <!-- Tailwind CSS should be precompiled and included locally for offline support -->
+    <meta name="description" content="Eat & drink app - Online food and drink ordering system. Order quickly and easily!">
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -54,12 +55,12 @@
                 "firebase/firestore": "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js",
                 "firebase/auth": "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js",
                 "firebase/functions": "https://www.gstatic.com/firebasejs/9.6.10/firebase-functions.js",
-                "idb": "./libs/idb.js"
+                "idb": "https://cdn.jsdelivr.net/npm/idb@7.1.1/build/index.js"
             }
         }
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="./libs/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
     <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
@@ -70,6 +71,11 @@
         <div class="absolute bottom-10">
              <div class="loading-spinner"></div>
         </div>
+    </div>
+
+    <!-- New: System Status Messages Container -->
+    <div id="system-status-messages" class="fixed inset-0 z-[9998] bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex flex-col items-center justify-center p-4 hidden">
+        <!-- Content will be injected here by app.js for critical errors -->
     </div>
     <header class="glass-header sticky top-0 z-50 border-b border-white/20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -203,7 +209,7 @@
                     <p class="text-slate-600 text-sm sm:text-base">Eat & drink app-ə daxil olun</p>
                 </div>
                 
-                <form id="login-form" class="space-y-4 sm:space-y-6">
+                <form id="login-form" class="space-y-4 sm:space-y-6" action="#" method="post">
                     <div>
                         <label for="email" class="block text-sm font-semibold text-slate-700 mb-2">Email ünvanı</label>
                         <input type="email" id="email" name="email" required 
@@ -274,7 +280,7 @@
                     <p class="text-slate-600">Sifariş verməyə başlamaq üçün masa nömrənizi daxil edin.</p>
                 </div>
                 
-                <form id="guest-table-form" class="space-y-4">
+                <form id="guest-table-form" class="space-y-4" action="#" method="post">
                     <div>
                         <label for="guestTableNumberInput" class="sr-only">Masa Nömrəsi</label>
                         <input type="number" id="guestTableNumberInput" name="tableNumber" min="1" required 

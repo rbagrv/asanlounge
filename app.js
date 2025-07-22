@@ -27,6 +27,7 @@ const logoutIconBtn = document.getElementById('logout-icon-btn');
 const guestNotificationsBtn = document.getElementById('guest-notifications-btn');
 const offlineIndicator = document.getElementById('offline-indicator'); // New element
 const pendingOrdersBadge = document.getElementById('pending-orders-badge'); // New element
+const systemStatusMessages = document.getElementById('system-status-messages'); // New element for system self-test
 
 export { offlineMode }; // Export offlineMode for other modules
 
@@ -45,6 +46,57 @@ window.updateAllLogos = (logoUrl) => {
     document.querySelectorAll('.app-logo').forEach(img => {
         img.src = logoUrl;
     });
+};
+
+// New: Global Error Handling
+const handleGlobalError = async (error, source, lineno, colno, errorObject) => {
+    console.error("Global Error Caught:", { error, source, lineno, colno, errorObject });
+
+    let errorMessage = "Sistemdə gözlənilməz xəta baş verdi. Zəhmət olmasa, yenidən cəhd edin.";
+    let errorDetails = {
+        message: error?.message || error || "Unknown error",
+        stack: errorObject?.stack || (error instanceof Error ? error.stack : 'No stack trace available'),
+        type: errorObject?.name || 'Error',
+        source: source || 'N/A',
+        lineno: lineno || 'N/A',
+        colno: colno || 'N/A',
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+    };
+
+    // Show a user-friendly notification
+    NotificationService.show(errorMessage, 'error', 8000);
+
+    // Attempt to send the error report via DataService
+    try {
+        await DataService.sendErrorReport(errorDetails);
+    } catch (reportError) {
+        console.error("Failed to send error report:", reportError);
+    }
+
+    // Return true to suppress default browser error reporting
+    return true;
+};
+
+// Listen for uncaught JavaScript errors
+window.onerror = (message, source, lineno, colno, errorObject) => {
+    return handleGlobalError(message, source, lineno, colno, errorObject);
+};
+
+// Listen for unhandled promise rejections
+window.onunhandledrejection = (event) => {
+    const error = event.reason;
+    let errorObject = null;
+    if (error instanceof Error) {
+        errorObject = error;
+    } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorObject = new Error(error.message);
+        errorObject.stack = error.stack;
+        errorObject.name = error.name;
+    } else {
+        errorObject = new Error(String(error)); // Convert anything to an Error object
+    }
+    return handleGlobalError(errorObject, 'Unhandled Promise Rejection', null, null, errorObject);
 };
 
 // Instantiate GuestModule once
@@ -142,6 +194,64 @@ const updateOfflineIndicator = async () => {
     }
 };
 
+// New: Self-test system and critical error display
+const checkSystemHealth = async () => {
+    let issues = [];
+
+    // Clear previous messages and hide
+    systemStatusMessages.innerHTML = '';
+    systemStatusMessages.classList.add('hidden');
+
+    // 1. Basic Network Check
+    if (!navigator.onLine) {
+        issues.push("İnternet bağlantısı yoxdur. Tətbiq offline rejimdə işləyə bilər, lakin məlumat sinxronizasiyası mümkün deyil.");
+        offlineMode = true;
+        await updateOfflineIndicator();
+    } else {
+        offlineMode = false;
+        await updateOfflineIndicator();
+    }
+
+    // 2. Firebase and Data Service Connectivity Check
+    // Attempt to fetch a non-critical piece of data from DataService.
+    // DataService already has internal fallbacks (cache, initialData),
+    // so if this fails, it indicates a severe issue with even those fallbacks or Firebase itself.
+    try {
+        const businessInfo = await DataService.getBusinessInfo();
+        if (!businessInfo || !businessInfo.businessName) {
+            issues.push("Biznes məlumatları yüklənə bilmədi. Firebase konfiqurasiyasında və ya məlumat servisində problem ola bilər.");
+        }
+    } catch (e) {
+        console.error("Critical DataService check failed:", e);
+        issues.push(`Serverə qoşularkən xəta: ${e.message || 'Naməlum xəta'}. Firewall, VPN və ya Firebase konfiqurasiyasını yoxlayın.`);
+    }
+
+    // 3. Display critical issues or indicate success
+    if (issues.length > 0) {
+        systemStatusMessages.innerHTML = `
+            <div class="ultra-modern-card p-6 text-center w-full max-w-lg">
+                <h3 class="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent mb-4">Sistem Başlanğıc Xətası!</h3>
+                <ul class="text-left text-slate-700 list-disc list-inside space-y-2 mb-6">
+                    ${issues.map(issue => `<li class="flex items-start"><span class="mr-2 text-red-500">●</span><span>${issue}</span></li>`).join('')}
+                </ul>
+                <p class="text-sm text-slate-600 mb-6">
+                    Yuxarıdakı problemlər tətbiqin düzgün işləməsinə mane olur.
+                    Zəhmət olmasa, internet bağlantınızı yoxlayın, tətbiqi yenidən başladın.
+                    Problem davam edərsə, sistem administratoru ilə əlaqə saxlayın.
+                </p>
+                <button id="retry-app-load" class="premium-gradient-btn text-white px-6 py-3 rounded-xl font-semibold">
+                    Yenidən Cəhd Et
+                </button>
+            </div>
+        `;
+        systemStatusMessages.classList.remove('hidden');
+        return false; // System health check failed
+    } else {
+        systemStatusMessages.classList.add('hidden');
+        return true; // System is healthy
+    }
+};
+
 const initializeApp = async () => {
     // Show splash screen immediately
     if (splashScreen) {
@@ -200,6 +310,17 @@ const initializeApp = async () => {
 
     // Initial check and update for offline indicator
     await updateOfflineIndicator();
+
+    // NEW: Perform system health check before proceeding
+    const isSystemHealthy = await checkSystemHealth();
+    if (!isSystemHealthy) {
+        // If system is not healthy, hide splash and stop here.
+        // The systemStatusMessages div is now visible.
+        if (splashScreen) {
+            splashScreen.classList.add('hidden');
+        }
+        return;
+    }
 
     // Normal authentication flow
     console.log('Starting normal auth flow...');
@@ -343,6 +464,11 @@ document.addEventListener('click', (event) => {
     }
 });
 
+document.getElementById('profile-settings-link').addEventListener('click', (e) => {
+    e.preventDefault(); // Prevent default anchor behavior
+    NotificationService.show('Profil tənzimləmələri funksiyası gələcəkdə əlavə ediləcək.', 'info');
+});
+
 document.getElementById('logout-link').addEventListener('click', (e) => {
     e.preventDefault();
     logoutBtn.click();
@@ -446,3 +572,11 @@ const launchPOS = async () => {
 
 // Initial app load
 initializeApp();
+
+// Add event listener for the retry button in system status messages
+systemStatusMessages.addEventListener('click', (event) => {
+    if (event.target.id === 'retry-app-load') {
+        systemStatusMessages.classList.add('hidden'); // Hide the error message
+        initializeApp(); // Re-attempt app initialization
+    }
+});

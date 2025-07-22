@@ -1,4 +1,4 @@
-import { createElement, createAnalyticsCard, createProductCard, createAdminProductForm, createOrderCard, createTableCard, createTableForm, createDiscountForm, createInventoryItemForm, createPurchaseForm, createEmployeeForm, createCategoryForm, createRecipeForm, createSupplierForm, createPOSOrderListItem, createUserCard, createSalesTableRow, createPOSProductCard, createPOSCartItem } from './components.js';
+import { createElement, createAnalyticsCard, createProductCard, createAdminProductForm, createOrderCard, createTableCard, createTableForm, createDiscountForm, createInventoryItemForm, createPurchaseForm, createEmployeeForm, createCategoryForm, createRecipeForm, createSupplierForm, createPOSOrderListItem, createUserCard, createSalesTableRow, createPOSCartItem, createPOSCategoryCard } from './components.js';
 import { DataService } from './services/dataService.js';
 import { NotificationService } from './utils/notificationService.js';
 import { CartService } from './utils/cartService.js';
@@ -33,15 +33,15 @@ const MENU_ITEMS = {
     dashboard: { text: 'Göstərici Lövhə', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`, permission: 'view_dashboard' },
     pos: { text: 'Kassa (POS)', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>`, permission: 'view_pos' },
     kitchen: { text: 'Mətbəx', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, permission: 'view_kitchen' },
-    orders: { text: 'Sifarişlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m-6-4v10m6-10v10m6-10v10M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>`, permission: 'view_orders' },
+    orders: { text: 'Sifarişlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m6-4h-6m-6 4h6m6 4h-6m-6 4h6m-6-4h6m6-4v10m6-10v10m6-10v10M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>`, permission: 'view_orders' },
     sales: { text: 'Satışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1m8-10a3 3 0 01-3-3V7a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_sales' },
     products: { text: 'Məhsullar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>`, permission: 'view_products' },
-    customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 21H2v-2a3 3 0 015.356-1.857M7 21v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 8a4 4 0 11-18 0 4 4 0 0118 0z"></path></svg>`, permission: 'view_customers' },
+    customers: { text: 'Müştərilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 01-9-5.197M15 21H7"></path></svg>`, permission: 'view_customers' },
     categories: { text: 'Kateqoriyalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_categories' },
     tables: { text: 'Masalar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H5a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`, permission: 'view_tables' },
-    inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 0H4m8 8v2m0 0h2m-2 4h-2m9-14V5m-5 4a1 1 0 11-2 0 1 1 0 012 0v1m-1 4a1 1 0 00-1 1v3M4 7h16"></path></svg>`, permission: 'view_inventory' },
-    employees: { text: 'İşçilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.255-1.274-.71-1.743M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.255-1.274.71-1.743M11 5a4 4 0 11-8 0 4 4 0 018 0zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`, permission: 'view_employees' },
-    purchases: { text: 'Alışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2H9a2 2 0 01-2-2v-5m0-8a2 2 0 012 2v2m0 0H9m0 0l3 3m-3-3l3-3m-3 3V8m0 4a2 2 0 01-2-2H5a2 2 0 01-2-2v-3m9 4H3"></path></svg>`, permission: 'view_purchases' },
+    inventory: { text: 'Anbar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7m4 10v2m0 0h2m-2-4h-2m9-14V5m-5 4a1 1 0 11-2 0 1 1 0 012 0v1m-1 4a1 1 0 00-1 1v3M4 7h16"></path></svg>`, permission: 'view_inventory' },
+    employees: { text: 'İşçilər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-2.12-2.19L15 6v14m-3-7v-6a1 1 0 00-1.94-1.78L10.75 5.14a1 1 0 00-1.94 1.78v6m-8-1H2v-4a1 1 0 00-1-1h-1m12 0a1 1 0 00-1 1v4m0 0H4v4a1 1 0 001 1h12a1 1 0 001-1v-4m0 0H2v-1a1 1 0 00-1-1V7a1 1 0 011-1h2m3 3H3m18 0h-2m-3 4l-2-2m0 0l-2 2m-2 2v1m6-4h-4m-4 0H7m6-4l2 2m6 2v1m-6 4h4m4-4l2-2m-2-2v-1"></path></svg>`, permission: 'view_employees' },
+    purchases: { text: 'Alışlar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10m-4-4l4-4m4 4H7m6-4v4m4-4H7"></path></svg>`, permission: 'view_purchases' },
     discounts: { text: 'Endirimlər', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>`, permission: 'view_discounts' },
     recipes: { text: 'Reseptlər', icon: `<img src="/chef-hat.png" class="w-5 h-5">`, permission: 'view_recipes' },
     suppliers: { text: 'Təchizatçılar', icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>`, permission: 'view_suppliers' },
@@ -76,14 +76,14 @@ export const showAdminLoginPrompt = () => {
                 <div>
                     <label for="adminEmailInput" class="block text-sm font-semibold text-slate-700 mb-2">Email ünvanı</label>
                     <input type="email" id="adminEmailInput" name="email" required 
-                           class="ultra-modern-input w-full px-4 py-3 rounded-xl text-base"
+                           class="ultra-modern-input w-full px-4 py-3 rounded-xl"
                            placeholder="admin@restaurant.com">
                 </div>
                 
                 <div>
                     <label for="adminPasswordInput" class="block text-sm font-semibold text-slate-700 mb-2">Şifrə</label>
                     <input type="password" id="adminPasswordInput" name="password" required 
-                           class="ultra-modern-input w-full px-4 py-3 rounded-xl text-base"
+                           class="ultra-modern-input w-full px-4 py-3 rounded-xl"
                            placeholder="••••••••">
                 </div>
                 
@@ -169,7 +169,7 @@ const renderAdminPanel = (container, role) => {
     const defaultTab = availableTabs[0] || 'dashboard'; // Default to dashboard or first available tab
 
     container.innerHTML = `
-        <div class="flex flex-col h-screen lg:flex-row admin-panel-container">
+        <div class="flex flex-col lg:flex-row admin-panel-container">
             <!-- Mobile Header -->
             <header class="lg:hidden glass-header flex items-center justify-between p-4 border-b border-slate-200">
                 <div class="flex items-center space-x-3">
@@ -474,10 +474,9 @@ const showDashboard = async (container) => {
                         datasets: [{
                             label: 'Satış (AZN)',
                             data: analytics.hourlySales,
-                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 2,
-                            tension: 0.3,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1,
                             fill: true,
                         }]
                     },
@@ -606,7 +605,7 @@ const showSales = async (container) => {
 
         const getEmployeeDisplayName = (userId) => {
             const user = allUsers.find(u => u.id === userId);
-            return user ? (user.name || user.email || 'N/A') : 'N/A';
+            return user ? (user.name || user.email) : 'N/A';
         };
 
         const getProductDisplayName = (productId) => {
@@ -716,7 +715,7 @@ const showSales = async (container) => {
         const salesTableBody = container.querySelector('#sales-table-body');
         const noSalesData = container.querySelector('#no-sales-data');
         const exportCsvBtn = container.querySelector('#export-csv-btn');
-        const exportExcelBtn = container.querySelector('#export-excel-btn');
+        const exportExcelBtn = container.querySelector('#export-excel-btn')
 
 
         const updateCharts = () => {
@@ -1069,7 +1068,7 @@ const showOrders = async (container) => {
 const showTables = async (container) => {
     if (!AuthService.hasPermission('view_tables')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Masaları görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1078,7 +1077,9 @@ const showTables = async (container) => {
         </div>
         
         <div id="tables-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            ${createTableCard({ number: 1, capacity: 4, isOccupied: false }).outerHTML}
+            <div class="flex justify-center py-8 col-span-full">
+                <div class="loading-spinner"></div>
+            </div>
         </div>
         
         <div id="table-modal-container"></div>
@@ -1091,7 +1092,7 @@ const showTables = async (container) => {
 const showCategories = async (container) => {
     if (!AuthService.hasPermission('view_categories')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Kateqoriyaları görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1123,7 +1124,7 @@ const showCategories = async (container) => {
 const showEmployees = async (container) => {
     if (!AuthService.hasPermission('view_employees')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">İşçiləri görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1140,7 +1141,7 @@ const showEmployees = async (container) => {
 const showInventory = async (container) => {
     if (!AuthService.hasPermission('view_inventory')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Anbarı görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1157,7 +1158,7 @@ const showInventory = async (container) => {
 const showPurchases = async (container) => {
     if (!AuthService.hasPermission('view_purchases')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Alışları görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1174,7 +1175,7 @@ const showPurchases = async (container) => {
 const showDiscounts = async (container) => {
     if (!AuthService.hasPermission('view_discounts')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Endirimləri görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1191,7 +1192,7 @@ const showDiscounts = async (container) => {
 const showRecipes = async (container) => {
     if (!AuthService.hasPermission('view_recipes')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Reseptləri görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1208,7 +1209,7 @@ const showRecipes = async (container) => {
 const showSuppliers = async (container) => {
     if (!AuthService.hasPermission('view_suppliers')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Təchizatçıları görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
     container.innerHTML = `
         <div class="flex justify-between items-center mb-6">
@@ -1225,17 +1226,13 @@ const showSuppliers = async (container) => {
 const showSettings = async (container) => {
     if (!AuthService.hasPermission('view_settings')) {
         container.innerHTML = `<p class="text-center text-red-500 py-8">Tənzimləmələri görmək üçün icazəniz yoxdur.</p>`;
-        return;
+        return () => {}; // Return empty cleanup
     }
-    container.innerHTML = `
-        <div class="flex justify-center py-8">
-            <div class="loading-spinner"></div>
-        </div>
-    `;
-
     try {
-        const businessInfo = await DataService.getBusinessInfo();
-        const users = await DataService.getUsers();
+        const [businessInfo, users] = await Promise.all([
+            DataService.getBusinessInfo(),
+            DataService.getUsers()
+        ]);
 
         container.innerHTML = `
             <div class="max-w-4xl mx-auto">
@@ -1262,7 +1259,7 @@ const showSettings = async (container) => {
                     ${AuthService.hasPermission('reset_database') ? `
                         <button class="settings-tab" data-tab="database">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
                             </svg>
                             <span>Baza Tənzimləmələri</span>
                         </button>
@@ -1284,23 +1281,23 @@ const showSettings = async (container) => {
                         ${AuthService.hasPermission('update_business_info') ? `
                         <form id="business-info-form" class="ultra-modern-card p-6 space-y-6">
                             <div>
-                                <label for="businessName" class="block text-sm font-bold text-slate-700 mb-2">Biznes Adı</label>
+                                <label for="businessName" class="block text-sm font-medium text-slate-700 mb-2">Biznes Adı</label>
                                 <input type="text" id="businessName" name="businessName" value="${businessInfo.businessName || ''}" 
-                                    class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                    class="ultra-modern-input w-full mt-1 px-3 py-2 rounded-lg"
                                     placeholder="Restoran adı">
                             </div>
                             
                             <div>
-                                <label for="businessAddress" class="block text-sm font-bold text-slate-700 mb-2">Ünvan</label>
+                                <label for="businessAddress" class="block text-sm font-medium text-slate-700 mb-2">Ünvan</label>
                                 <input type="text" id="businessAddress" name="address" value="${businessInfo.address || ''}" 
-                                    class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                    class="ultra-modern-input w-full mt-1 px-3 py-2 rounded-lg"
                                     placeholder="Tam ünvan">
                             </div>
                             
                             <div>
-                                <label for="businessPhone" class="block text-sm font-bold text-slate-700 mb-2">Telefon</label>
+                                <label for="businessPhone" class="block text-sm font-medium text-slate-700 mb-2">Telefon</label>
                                 <input type="tel" id="businessPhone" name="phone" value="${businessInfo.phone || ''}" 
-                                    class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                    class="ultra-modern-input w-full mt-1 px-3 py-2 rounded-lg"
                                     placeholder="+994 xx xxx xx xx">
                             </div>
                             
@@ -1308,23 +1305,23 @@ const showSettings = async (container) => {
                                 <h4 class="text-lg font-bold text-slate-800 mb-4">Sosial Medialar</h4>
                                 
                                 <div>
-                                    <label for="instagram" class="block text-sm font-bold text-slate-700 mb-2">Instagram</label>
+                                    <label for="instagram" class="block text-sm font-medium text-slate-700 mb-2">Instagram</label>
                                     <input type="url" id="instagram" name="instagram" value="${businessInfo.socials?.instagram || ''}" 
-                                        class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                        class="ultra-modern-input w-full mt-1 px-3 py-2 rounded-lg"
                                         placeholder="https://instagram.com/username">
                                 </div>
                                 
                                 <div>
-                                    <label for="facebook" class="block text-sm font-bold text-slate-700 mb-2">Facebook</label>
+                                    <label for="facebook" class="block text-sm font-medium text-slate-700 mb-2">Facebook</label>
                                     <input type="url" id="facebook" name="facebook" value="${businessInfo.socials?.facebook || ''}" 
-                                        class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                        class="ultra-modern-input w-full mt-1 px-3 py-2 rounded-lg"
                                         placeholder="https://facebook.com/page">
                                 </div>
                                 
                                 <div>
-                                    <label for="tiktok" class="block text-sm font-bold text-slate-700 mb-2">TikTok</label>
+                                    <label for="tiktok" class="block text-sm font-medium text-slate-700 mb-2">TikTok</label>
                                     <input type="url" id="tiktok" name="tiktok" value="${businessInfo.socials?.tiktok || ''}" 
-                                        class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                                        class="ultra-modern-input w-full mt-1 px-3 py-2 rounded-lg"
                                         placeholder="https://tiktok.com/@username">
                                 </div>
                             </div>
@@ -1374,7 +1371,7 @@ const showSettings = async (container) => {
                                                     ${AuthService.hasPermission('edit_employee') ? `
                                                         <button class="edit-user-btn text-blue-600 hover:text-blue-800" data-user-id="${user.id}">
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1-4H9a2 2 0 00-2-2V6a2 2 0 012-2h2m-1 4h2m-1 4v2m-9 4h2"></path>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2-2V5a2 2 0 012-2h11a2 2 0 012 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                                             </svg>
                                                         </button>
                                                     ` : ''}
@@ -1427,39 +1424,17 @@ const showSettings = async (container) => {
 
                                 <!-- Database Actions -->
                                 <div class="space-y-4">
-                                    <h5 class="font-semibold text-slate-700">Baza Əməliyyatları</h5>
+                                    <h5 class="font-semibold text-slate-700">Baza İmərləri</h5>
                                     <div class="space-y-3">
                                         <button id="refresh-stats-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
-                                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5a1 1 0 00-1-1h-2a1 1 0 00-1-1v-5m-4 0H4"></path>
-                                            </svg>
-                                            Statistikları Yenilə
+                                            Statistikaları Yenilə
                                         </button>
-                                        
-                                        <button id="backup-db-btn" class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
-                                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                                            </svg>
-                                            Yedəkləmə Yarat
+                                        <button id="backup-db-btn" class="w-full bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
+                                            Bazanı Yedəklə (JSON)
                                         </button>
-                                        
                                         <button id="reset-db-btn" class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-3 rounded-xl font-semibold transition-colors">
-                                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                            Bazanı Sıfırla
+                                            Bazanı Sıfırla (Diqqət!)
                                         </button>
-                                    </div>
-                                    
-                                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                                        <div class="flex">
-                                            <svg class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0v1m-1-4a1 1 0 00-1 1v3a1 1 0 00-1 1v1m-1-4a1 1 0 01-1-1v-3a1 1 0 012-2v-1m9 4H3"></path>
-                                            </svg>
-                                            <div class="text-sm text-yellow-700">
-                                                <strong>Diqqət:</strong> Baza əməliyyatları geri qaytarıla bilməz. Əməliyyat öncəsi yedəkləmə yaradın.
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1480,128 +1455,113 @@ const showSettings = async (container) => {
                                         <div class="flex items-center space-x-3">
                                             <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 16h-1v-4h-1m-9-4H3a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h2a2 2 0 012 2v3"></path>
                                                 </svg>
                                             </div>
                                             <div>
                                                 <h5 class="font-semibold text-slate-800">Ödəniş Sistemləri</h5>
-                                                <p class="text-sm text-slate-500">Online ödəniş üçün</p>
+                                                <p class="text-xs text-slate-500">Məs. Stripe, PayPal</p>
                                             </div>
                                         </div>
-                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" value="" class="sr-only peer">
+                                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
                                     </div>
-                                    <p class="text-sm text-slate-600">Kapital Bank, Unibank, PayPal və digər ödəniş sistemləri ilə inteqrasiya.</p>
+                                    <p class="text-sm text-slate-600">Ödəniş qapılarını qoşmaq üçün tənzimləmələr.</p>
                                 </div>
-
-                                <!-- SMS Service -->
+                                <!-- SMS Gateway -->
                                 <div class="border border-slate-200 rounded-xl p-4">
                                     <div class="flex items-center justify-between mb-4">
                                         <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h5 class="font-semibold text-slate-800">SMS Xidməti</h5>
-                                                <p class="text-sm text-slate-500">Müştəri bildirişləri</p>
+                                                <h5 class="font-semibold text-slate-800">SMS Gateway</h5>
+                                                <p class="text-xs text-slate-500">Məs. Twilio, Nexmo</p>
                                             </div>
                                         </div>
-                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" value="" class="sr-only peer">
+                                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
                                     </div>
-                                    <p class="text-sm text-slate-600">Sifariş statusu və kampanyalar haqqında SMS bildirişləri.</p>
+                                    <p class="text-sm text-slate-600">Müştərilərə SMS bildirişləri göndərmək üçün.</p>
                                 </div>
-
-                                <!-- Accounting -->
+                                <!-- Email Service -->
                                 <div class="border border-slate-200 rounded-xl p-4">
                                     <div class="flex items-center justify-between mb-4">
                                         <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-6 4h6m-6-4v10m6-10v10m6-10v10M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+                                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h5 class="font-semibold text-slate-800">Mühasibat Sistemi</h5>
-                                                <p class="text-sm text-slate-500">Maliyyə hesabatları</p>
+                                                <h5 class="font-semibold text-slate-800">Email Servisi</h5>
+                                                <p class="text-xs text-slate-500">Məs. SendGrid, Mailgun</p>
                                             </div>
                                         </div>
-                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
+                                        <label class="inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" value="" class="sr-only peer">
+                                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                        </label>
                                     </div>
-                                    <p class="text-sm text-slate-600">1C, SAP və digər mühasibat sistemləri ilə inteqrasiya.</p>
+                                    <p class="text-sm text-slate-600">Avtomatik email bildirişləri göndərmək üçün.</p>
                                 </div>
-
-                                <!-- Delivery -->
-                                <div class="border border-slate-200 rounded-xl p-4">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <h5 class="font-semibold text-slate-800">Çatdırılma Xidməti</h5>
-                                                <p class="text-sm text-slate-500">Kuryerlər üçün</p>
-                                            </div>
-                                        </div>
-                                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">Gələcəkdə</span>
-                                    </div>
-                                    <p class="text-sm text-slate-600">Bolt Food, Wolt və digər çatdırılma platformaları.</p>
-                                </div>
-                            </div>
-
-                            <div class="mt-8 text-center">
-                                <p class="text-slate-500 text-sm">Bu funksiyalar növbəti versiyalarda əlavə ediləcək.</p>
                             </div>
                         </div>
-                        ` : '<p class="text-center text-red-500 py-8">İnteqrasiya tənzimləmələrinə daxil olmaq üçün icazəniz yoxdur.</p>'}
                     </div>
+                    ` : '<p class="text-center text-red-500 py-8">İnteqrasiya tənzimləmələrinə daxil olmaq üçün icazəniz yoxdur.</p>'}
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        // Setup settings tabs event listeners
-        setupSettingsEventListeners(container);
-        
-        // Load database statistics
-        loadDatabaseStatistics();
+    // Setup settings tabs event listeners
+    setupSettingsEventListeners(container);
+    
+    // Load database statistics
+    loadDatabaseStatistics();
 
-        // Add event listener for business info form submission
-        const businessInfoForm = container.querySelector('#business-info-form');
-        if (AuthService.hasPermission('update_business_info') && businessInfoForm) {
-            businessInfoForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const formData = new FormData(e.target);
-                const data = {
-                    businessName: formData.get('businessName'),
-                    address: formData.get('address'),
-                    phone: formData.get('phone'),
-                    socials: {
-                        instagram: formData.get('instagram'),
-                        facebook: formData.get('facebook'),
-                        tiktok: formData.get('tiktok')
-                    }
-                };
-
-                const success = await DataService.updateBusinessInfo(data);
-                if (success) {
-                    NotificationService.show('Biznes məlumatları yeniləndi!', 'success');
-                } else {
-                    NotificationService.show('Məlumatlar yenilənərkən xəta baş verdi!', 'error');
+    // Add event listener for business info form submission
+    const businessInfoForm = container.querySelector('#business-info-form');
+    if (AuthService.hasPermission('update_business_info') && businessInfoForm) {
+        businessInfoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {
+                businessName: formData.get('businessName'),
+                address: formData.get('address'),
+                phone: formData.get('phone'),
+                socials: {
+                    instagram: formData.get('instagram'),
+                    facebook: formData.get('facebook'),
+                    tiktok: formData.get('tiktok')
                 }
-            });
-        }
+            };
 
-        // Activate the first available tab if one exists
-        const firstAvailableTab = container.querySelector('.settings-tab.active');
-        if (firstAvailableTab) {
-            const targetTabContent = container.querySelector(`#${firstAvailableTab.dataset.tab}-tab`);
-            if (targetTabContent) {
-                targetTabContent.classList.remove('hidden');
+            const success = await DataService.updateBusinessInfo(data);
+            if (success) {
+                NotificationService.show('Biznes məlumatları yeniləndi!', 'success');
+            } else {
+                NotificationService.show('Məlumatlar yenilənərkən xəta baş verdi!', 'error');
             }
+        });
+    }
+
+    // Activate the first available tab if one exists
+    const firstAvailableTab = container.querySelector('.settings-tab.active');
+    if (firstAvailableTab) {
+        const targetTabContent = container.querySelector(`#${firstAvailableTab.dataset.tab}-tab`);
+        if (targetTabContent) {
+            targetTabContent.classList.remove('hidden');
         }
+    }
 
     } catch (error) {
         console.error('Error loading settings:', error);
@@ -1668,7 +1628,7 @@ const setupSettingsEventListeners = (container) => {
 
     if (AuthService.hasPermission('reset_database') && backupDbBtn) {
         backupDbBtn.addEventListener('click', async () => {
-            NotificationService.show('Yedəkləmə funksiyas gələcəkdə əlavə ediləcək.', 'info');
+            NotificationService.show('Yedəkləmə funksiyası gələcəkdə əlavə ediləcək.', 'info');
         });
     }
 
@@ -1729,7 +1689,7 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
                     <h1 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">POS Sistemi</h1>
                     <div class="relative">
                         <input type="number" id="pos-table-number" placeholder="Masa №" 
-                            class="ultra-modern-input w-24 text-center px-3 py-2 rounded-xl text-base font-semibold"
+                            class="ultra-modern-input w-24 text-center px-3 py-2 rounded-xl"
                             min="1" value="${posCurrentTableNumber || ''}">
                     </div>
                 </div>
@@ -1737,28 +1697,28 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
                 <!-- Function Buttons -->
                 <div class="flex items-center space-x-2">
                     ${AuthService.hasPermission('process_pos_order') ? `
-                        <button id="pos-quick-sale-btn" class="pos-func-btn bg-green-100 text-green-700" title="F10 - Cəld Satış">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span class="hidden sm:inline">Cəld Satış (F10)</span>
+                        <button id="pos-quick-sale-btn" class="pos-func-btn bg-green-100 text-green-700" title="F10 - Quick Sale">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 16h-1v-4h-1m-9-4H3a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h2a2 2 0 012 2v3"></path></svg>
+                            <span class="hidden sm:inline">Quick Sale (F10)</span>
                         </button>
-                        <button id="pos-hold-order-btn" class="pos-func-btn bg-yellow-100 text-yellow-700" title="F2 - Sifarişi Saxla">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
-                            <span class="hidden sm:inline">Saxla (F2)</span>
+                        <button id="pos-hold-order-btn" class="pos-func-btn bg-yellow-100 text-yellow-700" title="F2 - Hold Order">
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3v-6a2 2 0 012-2h2a2 2 0 012 2v3"></path></svg>
+                            <span class="hidden sm:inline">Hold Order (F2)</span>
                         </button>
-                        <button id="pos-new-order-btn" class="pos-func-btn bg-blue-100 text-blue-700" title="F1 - Yeni Sifariş">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
-                            <span class="hidden sm:inline">Yeni (F1)</span>
+                        <button id="pos-new-order-btn" class="pos-func-btn bg-blue-100 text-blue-700" title="F1 - New Order">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 16h-1v-4h-1m-9-4H3a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h2a2 2 0 012 2v3"></path></svg>
+                            <span class="hidden sm:inline">New Order (F1)</span>
                         </button>
                     ` : ''}
                     ${AuthService.hasPermission('view_sales') ? `
-                        <button id="pos-payments-btn" class="pos-func-btn bg-purple-100 text-purple-700" title="Ödənişlər">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <span class="hidden sm:inline">Ödənişlər</span>
+                        <button id="pos-payments-btn" class="pos-func-btn bg-purple-100 text-purple-700" title="View Payments">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9v-4m3 4v-2m3-4V7m-6 4v3m0 0H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v10a2 2 0 01-2 2h-1m8-10a3 3 0 01-3-3V7a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
+                            <span class="hidden sm:inline">Payments</span>
                         </button>
                     ` : ''}
-                    <button id="pos-logout-btn" class="pos-func-btn bg-red-500 text-white" title="Çıxış">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3z"></path></svg>
-                        <span class="hidden sm:inline">Çıxış</span>
+                    <button id="pos-logout-btn" class="pos-func-btn bg-red-500 text-white" title="Logout">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3v-6a3 3 0 013-3h1a2 2 0 012 2v10a2 2 0 01-2 2h-1a3 3 0 01-3-3v-6a2 2 0 012-2h2a2 2 0 012 2v3"></path></svg>
+                        <span class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
@@ -1782,10 +1742,11 @@ const getPOSHtmlTemplate = (posCurrentTableNumber, posCategories) => `
                 <div class="ultra-modern-card flex-grow flex flex-col p-4 shadow-xl h-full">
                     <div class="mb-3 flex-shrink-0">
                         <input type="text" id="pos-product-search" placeholder="Məhsul axtar..." 
-                            class="ultra-modern-input w-full px-4 py-3 rounded-xl focus:outline-none text-base">
+                            class="ultra-modern-input w-full px-4 py-3 rounded-xl"
+                            autocomplete="off">
                     </div>
-                    <div id="pos-category-filters" class="flex flex-wrap gap-2 mb-3 flex-shrink-0">
-                        <button class="pos-category-btn active" data-category="all">Hamısı</button>
+                    <div id="pos-category-filters" class="ultra-modern-input flex flex-wrap gap-2 mb-3">
+                        <button class="pos-category-btn ${posCategories.length === 0 ? 'hidden' : ''} active" data-category="all">Hamısı</button>
                         ${posCategories.map(cat => `
                             <button class="pos-category-btn" data-category="${cat.name}">${cat.name}</button>
                         `).join('')}
@@ -1956,48 +1917,13 @@ const setupOrdersEventListeners = (container) => {
 };
 
 const setupTablesEventListeners = (container) => {
-    // Event listeners for Add, Edit, Delete table buttons
     const addTableBtn = container.querySelector('#add-table-btn');
     if (AuthService.hasPermission('add_table') && addTableBtn) {
         addTableBtn.addEventListener('click', () => showAddEditTableModal(container));
     }
-    if (AuthService.hasPermission('edit_table') || AuthService.hasPermission('delete_table')) {
-        container.addEventListener('click', (event) => {
-            const editBtn = event.target.closest('.edit-table-btn');
-            const deleteBtn = event.target.closest('.delete-table-btn');
-            
-            if (editBtn && AuthService.hasPermission('edit_table')) {
-                const tableId = editBtn.dataset.tableId;
-                // Fetch table data and show edit modal
-                DataService.getTables().then(tables => {
-                    const table = tables.find(t => t.id === tableId);
-                    if (table) showAddEditTableModal(container, table);
-                });
-            } else if (deleteBtn && AuthService.hasPermission('delete_table')) {
-                const tableId = deleteBtn.dataset.tableId;
-                NotificationService.showConfirm('Masayı silmək istədiyinizə əminsinizmi?').then(async (confirmed) => {
-                    if (confirmed) {
-                        const loading = NotificationService.showLoading('Masa silinir...');
-                        const success = await DataService.deleteTable(tableId);
-                        NotificationService.hideLoading(loading);
-                        if (success) {
-                            NotificationService.show('Masa uğurla silindi!', 'success');
-                            showTables(container); // Refresh table list
-                        } else {
-                            NotificationService.show('Masa silinərkən xəta baş verdi!', 'error');
-                        }
-                    }
-                });
-            }
-        });
-    }
-    console.log('Tables event listeners are set up.');
 };
 
 const showAddEditTableModal = (container, table = null) => {
-    const modalContainer = container.querySelector('#table-modal-container');
-    modalContainer.innerHTML = ''; // Clear previous modal content
-
     const modal = createElement('div', { className: 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4' });
     modal.innerHTML = `
         <div class="ultra-modern-card p-6 w-full max-w-md animate-scale-in">
@@ -2008,6 +1934,8 @@ const showAddEditTableModal = (container, table = null) => {
             </div>
         </div>
     `;
+
+    const modalContainer = container.querySelector('#table-modal-container');
     modalContainer.appendChild(modal);
 
     const form = modal.querySelector('form');
@@ -2022,73 +1950,45 @@ const showAddEditTableModal = (container, table = null) => {
 
         const loading = NotificationService.showLoading(table ? 'Masa yenilənir...' : 'Masa əlavə edilir...');
         let success;
-        if (table) {
-            success = await DataService.updateTable(table.id, data);
-        } else {
-            success = await DataService.addTable(data);
-        }
-        NotificationService.hideLoading(loading);
-
-        if (success) {
-            NotificationService.show(`Masa uğurla ${table ? 'yeniləndi' : 'əlavə edildi'}!`, 'success');
-            modalContainer.innerHTML = ''; // Close modal
-            showTables(container); // Refresh table list
-        } else {
-            NotificationService.show(`Masa ${table ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi!`, 'error');
+        try {
+            if (table) {
+                success = await DataService.updateTable(table.id, data);
+            } else {
+                success = await DataService.addTable(data);
+            }
+            NotificationService.hideLoading(loading);
+            if (success) {
+                NotificationService.show(`Masa uğurla ${table ? 'yeniləndi' : 'əlavə edildi'}!`, 'success');
+                modalContainer.innerHTML = '';
+                showTables(container); // Refresh table list
+            } else {
+                NotificationService.show(`Masa ${table ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi!`, 'error');
+            }
+        } catch (error) {
+            NotificationService.hideLoading(loading);
+            console.error('Error updating table:', error);
+            NotificationService.show(`Masa ${table ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi: ${error.message}`, 'error');
         }
     });
 
     modal.querySelector('.close-modal').addEventListener('click', () => {
-        modalContainer.innerHTML = ''; // Close modal
+        modalContainer.innerHTML = '';
     });
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
-            modalContainer.innerHTML = ''; // Close modal if clicked outside
+            modalContainer.innerHTML = '';
         }
     });
-}
+};
 
 const setupCategoriesEventListeners = (container) => {
     const addCategoryBtn = container.querySelector('#add-category-btn');
     if (AuthService.hasPermission('add_category') && addCategoryBtn) {
         addCategoryBtn.addEventListener('click', () => showAddEditCategoryModal(container));
     }
-    if (AuthService.hasPermission('edit_category') || AuthService.hasPermission('delete_category')) {
-        container.addEventListener('click', (event) => {
-            const editBtn = event.target.closest('.edit-category-btn');
-            const deleteBtn = event.target.closest('.delete-category-btn');
-            
-            if (editBtn && AuthService.hasPermission('edit_category')) {
-                const categoryId = editBtn.dataset.categoryId;
-                DataService.getCategories().then(categories => {
-                    const category = categories.find(c => c.id === categoryId);
-                    if (category) showAddEditCategoryModal(container, category);
-                });
-            } else if (deleteBtn && AuthService.hasPermission('delete_category')) {
-                const categoryId = deleteBtn.dataset.categoryId;
-                NotificationService.showConfirm('Kateqoriyanı silmək istədiyinizə əminsinizmi?').then(async (confirmed) => {
-                    if (confirmed) {
-                        const loading = NotificationService.showLoading('Kateqoriya silinir...');
-                        const success = await DataService.deleteCategory(categoryId);
-                        NotificationService.hideLoading(loading);
-                        if (success) {
-                            NotificationService.show('Kateqoriya uğurla silindi!', 'success');
-                            showCategories(container); // Refresh category list
-                        } else {
-                            NotificationService.show('Kateqoriya silinərkən xəta baş verdi!', 'error');
-                        }
-                    }
-                });
-            }
-        });
-    }
-    console.log('Categories event listeners are set up.');
 };
 
 const showAddEditCategoryModal = (container, category = null) => {
-    const modalContainer = container.querySelector('#category-modal-container');
-    modalContainer.innerHTML = '';
-
     const modal = createElement('div', { className: 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4' });
     modal.innerHTML = `
         <div class="ultra-modern-card p-6 w-full max-w-md animate-scale-in">
@@ -2099,6 +1999,8 @@ const showAddEditCategoryModal = (container, category = null) => {
             </div>
         </div>
     `;
+
+    const modalContainer = container.querySelector('#category-modal-container');
     modalContainer.appendChild(modal);
 
     const form = modal.querySelector('form');
@@ -2111,19 +2013,24 @@ const showAddEditCategoryModal = (container, category = null) => {
 
         const loading = NotificationService.showLoading(category ? 'Kateqoriya yenilənir...' : 'Kateqoriya əlavə edilir...');
         let success;
-        if (category) {
-            success = await DataService.updateCategory(category.id, data);
-        } else {
-            success = await DataService.addCategory(data);
-        }
-        NotificationService.hideLoading(loading);
-
-        if (success) {
-            NotificationService.show(`Kateqoriya uğurla ${category ? 'yeniləndi' : 'əlavə edildi'}!`, 'success');
-            modalContainer.innerHTML = '';
-            showCategories(container);
-        } else {
-            NotificationService.show(`Kateqoriya ${category ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi!`, 'error');
+        try {
+            if (category) {
+                success = await DataService.updateCategory(category.id, data);
+            } else {
+                success = await DataService.addCategory(data);
+            }
+            NotificationService.hideLoading(loading);
+            if (success) {
+                NotificationService.show(`Kateqoriya uğurla ${category ? 'yeniləndi' : 'əlavə edildi'}!`, 'success');
+                modalContainer.innerHTML = '';
+                showCategories(container); // Refresh category list
+            } else {
+                NotificationService.show(`Kateqoriya ${category ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi!`, 'error');
+            }
+        } catch (error) {
+            NotificationService.hideLoading(loading);
+            console.error(`Error ${category ? 'updating' : 'adding'} category:`, error);
+            NotificationService.show(`Kateqoriya ${category ? 'yenilənərkən' : 'əlavə edilərkən'} xəta baş verdi: ${error.message}`, 'error');
         }
     });
 
@@ -2135,7 +2042,7 @@ const showAddEditCategoryModal = (container, category = null) => {
             modalContainer.innerHTML = '';
         }
     });
-}
+};
 
 const setupPOSEventListeners = (container) => {
     const posTableNumberInput = container.querySelector('#pos-table-number');
@@ -2363,7 +2270,7 @@ const setupPOSEventListeners = (container) => {
                 return;
             }
             if (!posCurrentSelectedOrderId) {
-                NotificationService.show('Zəhmət olmasa servis ediləcək sifarişi seçin.', 'warning');
+                NotificationService.show('Servis ediləcək sifarişi seçin.', 'warning');
                 return;
             }
             const loading = NotificationService.showLoading('Sifariş servis edilir...');
@@ -2398,7 +2305,7 @@ const setupPOSEventListeners = (container) => {
                 return;
             }
             if (!posCurrentSelectedOrderId) {
-                NotificationService.show('Zəhmət olmasa ödəniş alınacaq sifarişi seçin.', 'warning');
+                NotificationService.show('Ödəniş alınacaq sifarişi seçin.', 'warning');
                 return;
             }
             const loading = NotificationService.showLoading('Ödəniş qeydə alınır...');
@@ -2523,7 +2430,7 @@ const setupPOSEventListeners = (container) => {
     if (posQuickSaleBtn) {
         posQuickSaleBtn.addEventListener('click', () => {
             if (!AuthService.hasPermission('process_pos_order')) {
-                NotificationService.show('Cəld satış etmək üçün icazəniz yoxdur.', 'error');
+                NotificationService.show('Cəld satış etmək üçün ic!azəniz yoxdur.', 'error');
                 return;
             }
             adminCartService.clear();
@@ -2541,10 +2448,6 @@ const setupPOSEventListeners = (container) => {
     const posOpenOrdersList = container.querySelector('#pos-open-orders-list');
     if (posOpenOrdersList) {
         posOpenOrdersList.addEventListener('click', (event) => {
-            if (!AuthService.hasPermission('process_pos_order')) { // Assuming selecting an order for processing requires this permission
-                NotificationService.show('Sifarişi yükləmək üçün icazəniz yoxdur.', 'error');
-                return;
-            }
             const openOrder = event.target.closest('.pos-order-list-item');
             if (openOrder) {
                 const orderId = openOrder.dataset.orderId;
@@ -2572,7 +2475,6 @@ const setupPOSEventListeners = (container) => {
 
                     NotificationService.show(`Masa ${selectedOrder.tableNumber} sifarişi yükləndi.`, 'info');
                 }
-                loadPOSExistingOrders(container); // Re-render to show selection
             }
         });
     }
@@ -2668,7 +2570,7 @@ const updatePOSCartDisplay = () => {
     } else {
         posPlaceOrderBtn.disabled = true;
     }
-    
+
     if (AuthService.hasPermission('mark_order_served')) {
         posMarkServedBtn.disabled = !hasSelectedOrder;
     } else {

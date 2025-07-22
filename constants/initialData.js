@@ -169,6 +169,12 @@ export const ORDER_STATUSES = {
     CANCELLED: 'cancelled'
 };
 
+export const PAYMENT_TYPES = {
+    CASH: 'cash',
+    CREDIT: 'credit',
+    QR: 'qr'
+};
+
 export const INITIAL_CATEGORIES = [
     { name: 'Əsas Yeməklər' },
     { name: 'Pizzalar' },
@@ -176,3 +182,129 @@ export const INITIAL_CATEGORIES = [
     { name: 'İçkilər' },
     { name: 'Şirniyyatlar' }
 ];
+
+export const DEFAULT_PERMISSIONS = {
+    admin: {
+        view_dashboard: true,
+        view_pos: true,
+        view_kitchen: true,
+        view_orders: true,
+        view_sales: true, // Added for admin
+        view_products: true,
+        view_customers: true,
+        view_categories: true,
+        view_tables: true,
+        view_inventory: true,
+        view_employees: true,
+        view_purchases: true,
+        view_discounts: true,
+        view_recipes: true,
+        view_suppliers: true,
+        view_settings: true,
+        
+        manage_products: true,
+        manage_categories: true,
+        manage_tables: true,
+        manage_inventory: true,
+        manage_employees: true,
+        manage_purchases: true,
+        manage_discounts: true,
+        manage_recipes: true,
+        manage_suppliers: true,
+        
+        update_order_status: true,
+        process_pos_order: true,
+        mark_order_served: true,
+        mark_order_paid: true,
+        
+        // Granular permissions for CRUD
+        add_product: true,
+        edit_product: true,
+        delete_product: true,
+
+        add_category: true,
+        edit_category: true,
+        delete_category: true,
+
+        add_table: true,
+        edit_table: true,
+        delete_table: true,
+
+        add_inventory_item: true,
+        edit_inventory_item: true,
+        delete_inventory_item: true,
+
+        add_employee: true,
+        edit_employee: true,
+        delete_employee: true,
+
+        add_purchase: true,
+        edit_purchase: true,
+        delete_purchase: true,
+
+        add_discount: true,
+        edit_discount: true,
+        delete_discount: true,
+
+        add_recipe: true,
+        edit_recipe: true,
+        delete_recipe: true,
+
+        add_supplier: true,
+        edit_supplier: true,
+        delete_supplier: true,
+
+        manage_users_roles: true, // For changing roles, adding/deleting users
+        reset_database: true,
+        update_business_info: true,
+        access_integrations: true,
+        export_sales_data: true, // New permission for sales data export
+    },
+    manager: {
+        view_dashboard: true,
+        view_pos: true,
+        view_kitchen: true,
+        view_orders: true,
+        view_sales: true, // Managers can view sales
+        view_products: true, // Managers can view products to understand inventory flow
+        view_inventory: true,
+        view_employees: true,
+        view_purchases: true,
+        
+        manage_inventory: true,
+        manage_employees: true, // Can add/edit non-admin employees
+        manage_purchases: true,
+        
+        update_order_status: true,
+        process_pos_order: true,
+        mark_order_served: true,
+        mark_order_paid: true,
+
+        edit_inventory_item: true,
+        add_purchase: true,
+        edit_purchase: true,
+
+        edit_employee: true, // Can edit employees (not admin)
+        export_sales_data: true, // Managers can export sales data
+    },
+    cashier: {
+        view_pos: true,
+        view_orders: true,
+        view_sales: true, // Can view sales to check past transactions
+        
+        process_pos_order: true,
+        mark_order_served: true,
+        mark_order_paid: true,
+        export_sales_data: true, // Cashiers can export sales data
+    },
+    waiter: {
+        view_kitchen: true,
+        update_order_status: true, // Can mark orders in-prep, ready, served
+    },
+    guest: {
+        // Guests only access specific guest UI, no admin panel permissions
+    },
+    'guest-anonymous': {
+        // Same as guest
+    }
+};

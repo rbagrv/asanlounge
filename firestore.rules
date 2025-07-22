@@ -1,0 +1,83 @@
+import { auth } from './firebase-config.js';
+import { createPOSOrderListItem, createPOSCartItem } from './components.js';
+import { posOrdersUnsubscribe } from './utils/offlineDB.js'; // Import to check offline queue size
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to get a user's role from the 'users' collection.
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
+    }
+
+    // --- COLLECTION: users ---
+    // Stores user data, including roles.
+    match /users/{userId} {
+      // Any authenticated user can create their own user document (e.g., on first sign-in).
+      allow create: if request.auth != null;
+      // Users can read their own data. Admins can read anyone's data.
+      allow read: if request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin';
+      // Users can update their own data. Admins can update anyone's data.
+      allow update: if request.auth.uid == userId || getUserRole(request.auth.uid) == 'admin';
+      // Only admins can delete user documents.
+      allow delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // --- COLLECTION: products ---
+    // Publicly readable product information for menus.
+    match /products/{productId} {
+      allow read: if true;
+      // Only admins and managers can create, update, or delete products.
+      allow write: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager'];
+    }
+
+    // --- COLLECTION: categories ---
+    // Publicly readable product categories.
+    match /categories/{categoryId} {
+      allow read: if true;
+      // Only admins and managers can manage categories.
+      allow write: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager'];
+    }
+
+    // --- COLLECTION: orders ---
+    // Customer orders with specific access controls.
+    match /orders/{orderId} {
+      // Any authenticated user (including anonymous guests) can create an order.
+      allow create: if request.auth != null;
+      // A user can read their own orders. Staff can read all orders.
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || getUserRole(request.auth.uid) in ['admin', 'manager', 'cashier', 'waiter']);
+      // Staff roles can update order status.
+      allow update: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager', 'cashier', 'waiter'];
+      // Only admins can delete orders.
+      allow delete: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+
+    // --- COLLECTION: tables ---
+    // Restaurant tables, manageable by staff.
+    match /tables/{tableId} {
+      // Staff roles can read table information.
+      allow read: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager', 'cashier', 'waiter'];
+      // Admins and managers can manage tables.
+      allow write: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager'];
+    }
+
+    // --- COLLECTION: settings ---
+    // Global app settings like business info and permissions.
+    match /settings/{settingId} {
+      // Anyone can read business info for display purposes.
+      allow read: if true;
+      // Only admins can write to settings.
+      allow write: if request.auth != null && getUserRole(request.auth.uid) == 'admin';
+    }
+    
+    // --- GENERIC RULES for Management Collections ---
+    // Collections like inventory, purchases, etc., are restricted to staff.
+    match /{collectionName}/{docId} 
+      where collectionName in ['inventory', 'purchases', 'discounts', 'recipes', 'suppliers'] {
+        // Staff roles can view these sections for operational purposes.
+        allow read: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager', 'cashier', 'waiter'];
+        // Admins and managers have write access.
+        allow write: if request.auth != null && getUserRole(request.auth.uid) in ['admin', 'manager'];
+    }
+  }
+}
