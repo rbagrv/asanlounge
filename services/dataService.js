@@ -962,6 +962,7 @@ export class DataService {
 
   // Telegram Bot integration for QR orders
   static async sendTelegramNotification(order) {
+    // IMPORTANT: Replace these placeholder values with your actual Telegram Bot Token and Chat ID.
     const botToken = '<YOUR_TELEGRAM_BOT_TOKEN>';
     const chatId = '<YOUR_TELEGRAM_CHAT_ID>';
     const message = `New QR Order\nID: ${order.id}\nTable: ${order.tableNumber}\nTotal: ${order.total.toFixed(2)} AZN`;
