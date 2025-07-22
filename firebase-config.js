@@ -1,19 +1,19 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
-import { getFunctions, httpsCallable } from 'firebase/functions';
+import { getFunctions } from 'firebase/functions';
 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   // IMPORTANT: Replace the placeholder values below with your actual Firebase project configuration.
   // Go to your Firebase project settings -> "General" tab -> "Your apps" section -> "Web" app to find your config.
-  apiKey: "AIzaSyC5yq_...-placeholder",
-  authDomain: "eat-drink-app-demo.firebaseapp.com",
-  projectId: "eat-drink-app-demo",
-  storageBucket: "eat-drink-app-demo.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:a1b2c3d4e5f6a7b8c9d0e1",
-  measurementId: "G-ABCDEFGHIJ" // Optional
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID" // Optional
 };
 
 // Initialize Firebase
