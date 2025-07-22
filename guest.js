@@ -391,15 +391,12 @@ export class GuestModule {
           this.handleProductInteraction(event);
       }
 
-      // Guest notifications
-      const guestNotificationsBtn = event.target.closest('#guest-notifications-btn');
-      if (guestNotificationsBtn) {
-          this.showOrderStatusModal();
-      }
+      // This button is in the header, outside the 'container'.
+      // The listener is now in app.js for better scope management.
     });
 
     // Cart interactions
-    const cartContainer = container.querySelector('#guest-cart-container');
+    const cartContainer = document.querySelector('#guest-cart-container'); // Listen on document to find it reliably
     if (cartContainer) {
         cartContainer.addEventListener('click', (event) => {
             const placeOrderBtn = event.target.closest('#place-order-btn');
@@ -582,10 +579,10 @@ export class GuestModule {
   }
 
   updateCartDisplay(container) {
-    const cartItemsDiv = container.querySelector('#cart-items');
-    const cartTotalPriceSpan = container.querySelector('#cart-total-price-bar');
-    const cartContainer = container.querySelector('#guest-cart-container');
-    const cartItemCountBadge = container.querySelector('#cart-item-count-badge');
+    const cartItemsDiv = document.querySelector('#cart-items');
+    const cartTotalPriceSpan = document.querySelector('#cart-total-price-bar');
+    const cartContainer = document.querySelector('#guest-cart-container');
+    const cartItemCountBadge = document.querySelector('#cart-item-count-badge');
     
     const cart = guestCartService.getItems();
     const total = guestCartService.getTotal();
@@ -875,7 +872,7 @@ export class GuestModule {
     successDiv.innerHTML = `
       <div class="bg-gradient-to-r from-green-500 to-emerald-500 text-white p-8 rounded-full shadow-2xl animate-bounce">
         <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l14-14m-8 8l-7 7m14-14l-7 7"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
       </div>
     `;
@@ -942,7 +939,7 @@ export class GuestModule {
       }
   }
 
-  showOrderStatusModal() {
+  async showOrderStatusModal() {
       const container = document.getElementById('order-status-modal-container');
       container.innerHTML = ''; // Clear previous modal
 
@@ -976,12 +973,14 @@ export class GuestModule {
               closeModal();
           }
       });
-      // Immediately render content
-      this.renderOrderStatusModalContent(modal.querySelector('.modal-content-area'), Object.values(this.lastKnownOrderStatuses).filter(o => !['paid', 'cancelled'].includes(o.status)));
+      
+      const orders = await DataService.getOrdersForUser(this.userId, () => {});
+      const activeOrders = orders.filter(o => !['paid', 'cancelled'].includes(o.status));
+      this.renderOrderStatusModalContent(modal.querySelector('.modal-content-area'), activeOrders);
   }
 
   renderOrderStatusModalContent(container, orders) {
-      if (orders.length === 0) {
+      if (!orders || orders.length === 0) {
           container.innerHTML = `
               <div class="text-center py-12">
                   <p class="text-slate-500">Aktiv sifarişiniz yoxdur.</p>
@@ -990,15 +989,7 @@ export class GuestModule {
           return;
       }
 
-      // Filter and map only active orders from lastKnownOrderStatuses that match the given orders
-      const ordersToDisplay = orders.map(activeOrder => {
-          // Find the full order object that we've been tracking, not just the ID and status
-          const fullOrder = Object.values(this.lastKnownOrderStatuses).find(o => o.id === activeOrder.id);
-          return fullOrder || activeOrder; // Use full tracked object if available, otherwise fallback to activeOrder
-      }).filter(Boolean); // Filter out any nulls if an order wasn't found in tracking (shouldn't happen but for safety)
-
-
-      container.innerHTML = ordersToDisplay.map(order => this.createOrderStatusTimeline(order)).join('');
+      container.innerHTML = orders.map(order => this.createOrderStatusTimeline(order)).join('');
   }
   
   createOrderStatusTimeline(order) {
